@@ -1,0 +1,3 @@
+[submodule "example_device/components/lora_compon"]
+	path = example_device/components/lora_compon
+	url = git@gitlab.com:matchx/x2e_reference_sensor/x2e_ref-lora_compon.git
