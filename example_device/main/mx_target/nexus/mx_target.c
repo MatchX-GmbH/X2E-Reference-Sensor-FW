@@ -55,12 +55,14 @@ static void InitSpi(void) {
       .sclk_io_num = SPI1_SCK,
       .quadwp_io_num = -1,
       .quadhd_io_num = -1,
-      .max_transfer_sz = 32,
+      .max_transfer_sz = 384,
   };
   esp_err_t ret = spi_bus_initialize(SPIHOST, &buscfg, SPI_DMA_CH_AUTO);
   if (ret != ESP_OK) {
     PrintLine("SPI bus init failed.");
   }
+  gpio_set_drive_capability(SPI1_SCK, GPIO_DRIVE_CAP_1);
+  gpio_set_drive_capability(SPI1_MOSI, GPIO_DRIVE_CAP_1);
 }
 
 //==========================================================================
