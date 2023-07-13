@@ -6,5 +6,10 @@
 		{
 			"path": "example_device"
 		}
-	]
+	],
+	"settings": {
+		"files.associations": {
+			"stdbool.h": "c"
+		}
+	}
 }
