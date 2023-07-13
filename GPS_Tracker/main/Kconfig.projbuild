@@ -1,0 +1,16 @@
+menu "MatchX"
+    choice MATCHX_TARGET_BOARD
+        prompt "Target board"
+        default MATCHX_TARGET_NEXUS
+        help
+            Select the target board.
+            It will affect the build of components, such as LoRa.
+
+        config MATCHX_TARGET_X2E_REF
+            bool "X2E Reference Sensor"
+
+        config MATCHX_TARGET_NEXUS
+            bool "NEXUS"
+
+    endchoice #MATCHX_TARGET_BOARD
+endmenu
