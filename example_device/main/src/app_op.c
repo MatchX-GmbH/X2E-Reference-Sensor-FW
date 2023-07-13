@@ -102,7 +102,12 @@ static void AppOpTask(void *param) {
       case S_IDLE:
         if (LoRaComponIsJoined()) {
           LedSet(true);
-          PrintLine("Joined.");
+          if (LoRaComponIsIsm2400()) {
+            PrintLine("Joined with ISM2400");
+          }
+          else {
+            PrintLine("Joined with sub-GHz");
+          }          
           PrintLine("Data sending interval %ds.", interval / 1000);
           tick_lora = GetTick();
           state_lora = S_JOIN_WAIT;
@@ -117,10 +122,11 @@ static void AppOpTask(void *param) {
         }
         break;
       case S_SEND_DATA:
-        tick_lora = GetTick();
-        SendData();
         // Set reporting battery status to external power.
         LoRaComponSetExtPower();
+        // Send data
+        SendData();
+        tick_lora = GetTick();
         state_lora = S_SEND_DATA_WAIT;
         break;
       case S_SEND_DATA_WAIT:
@@ -130,6 +136,7 @@ static void AppOpTask(void *param) {
           } else {
             PrintLine("Send data failed.");
           }
+          tick_lora = GetTick();
           state_lora = S_WAIT_INTERVAL;
         }
         break;
