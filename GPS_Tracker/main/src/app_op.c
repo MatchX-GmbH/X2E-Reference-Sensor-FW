@@ -27,11 +27,15 @@
 #include "packer.h"
 #include "led.h"
 #include "sensors.h"
+#include "GPS_Distance.h"
+#include "esp_sleep.h"
 
 //==========================================================================
 // Defines
 //==========================================================================
 #define DelayMs(x) vTaskDelay(x / portTICK_PERIOD_MS)
+
+#define USR_BUTTON GPIO_NUM_0
 
 // States
 typedef enum {
@@ -177,13 +181,15 @@ int8_t AppOpInit(void) {
   // LoRa hardware related init
   LoRaComponHwInit();
 
-  //
   LedInit();
   LedSet(false);
+//  vTaskDelay(10000 / portTICK_PERIOD_MS);
+//  esp_sleep_enable_ext0_wakeup(USR_BUTTON, 0);
+//  esp_deep_sleep_start();
 
   GPS_MeasureStart();
 
-  // Create task
+//  Create task
   if (xTaskCreate(AppOpTask, "AppOp", 4096, NULL, TASK_PRIO_GENERAL, &gAppOpHandle) != pdPASS) {
     printf("ERROR. Failed to create AppOp task.\n");
     return -1;

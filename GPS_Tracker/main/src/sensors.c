@@ -44,7 +44,7 @@ esp_err_t BatteryStatusUpdate() {
   default_init(&Bat_Monitor);
   esp_err_t err = read_registers(&Bat_Monitor);
 
-  ESP_LOGI(TAG, "Battery Status Update: SOC = %d ,Current = %d", Bat_Monitor.socReg, Bat_Monitor.currentReg);
+//  ESP_LOGI(TAG, "Battery Status Update: SOC = %d ,Current = %d", Bat_Monitor.socReg, Bat_Monitor.currentReg);
 
   if (err != ESP_OK) {
     LoRaComponSetBatteryPercent(NAN);
@@ -71,7 +71,7 @@ void GPS_MeasureStart() {
   if (GPS_queue == NULL)
     ESP_LOGE(TAG, "Failed to Init the GPS");
 
-  xTaskCreate(Idle_Detection, "Idle_Detection", 2048, NULL, 0, NULL);
+  xTaskCreate(Idle_Detection, "Idle_Detection", 4096, NULL, 0, NULL);
 }
 
 uint16_t GPS_SendData() {
@@ -81,6 +81,11 @@ uint16_t GPS_SendData() {
   if (xQueueReceive(GPS_queue, &gps, (TickType_t) 5)) {
 //          gpio_set_level(USR_LED, 0);
     ptr = buf;
+
+    ptr += PackU8(ptr, MX_DATATYPE_SENSOR | 0x05);
+    ptr += PackU8(ptr, MX_SENSOR_DISTANCE);
+    ptr += PackFloat(ptr, (float32_t) (gps.Total_Average_Distance * 1000));
+
     ptr += PackU8(ptr, MX_DATATYPE_SENSOR | 0x05);
     ptr += PackU8(ptr, MX_SENSOR_DISTANCE);
     ptr += PackFloat(ptr, (float32_t) (gps.Total_Distance * 1000));
@@ -149,7 +154,6 @@ void Idle_Detection(void *args) {
     if (lis2de12_Is_data_ready()) {
       lis2de12_get_acce(&Accel);
       Mag = sqrt(pow(Accel.acce_x, 2) + pow(Accel.acce_y, 2) + pow(Accel.acce_z, 2));
-//      printf("Mag = %6.1f\n", Mag);
       if (Mag > Idle_Accel_THRESHOLD) {
         xTimerStart(Timer_0, 0);
         Is_Moving = true;

@@ -32,8 +32,14 @@
  *     - Airborne (1G, 2G and 4G max modes)
  */
 typedef enum _ub7_nav_mode {
-	UB7_MODE_PORTABLE, UB7_MODE_STATIONARY = 2, UB7_MODE_PEDESTRIAN, UB7_MODE_AUTOMOTIVE, UB7_MODE_SEA, UB7_MODE_AIR_1G_MAX,
-	UB7_MODE_AIR_2G_MAX, UB7_MODE_AIR_4G_MAX
+  UB7_MODE_PORTABLE,
+  UB7_MODE_STATIONARY = 2,
+  UB7_MODE_PEDESTRIAN,
+  UB7_MODE_AUTOMOTIVE,
+  UB7_MODE_SEA,
+  UB7_MODE_AIR_1G_MAX,
+  UB7_MODE_AIR_2G_MAX,
+  UB7_MODE_AIR_4G_MAX
 } ub7_nav_mode_t;
 
 /**
@@ -44,22 +50,38 @@ typedef enum _ub7_nav_mode {
  *     - Currently no baud change supported
  */
 typedef enum _ub7_baud_rate_t {
-	UB7_BAUD_4800, UB7_BAUD_9600, UB7_BAUD_19200, UB7_BAUD_38400, UB7_BAUD_57600, UB7_BAUD_115200
+  UB7_BAUD_4800,
+  UB7_BAUD_9600,
+  UB7_BAUD_19200,
+  UB7_BAUD_38400,
+  UB7_BAUD_57600,
+  UB7_BAUD_115200
 } ub7_baud_rate_t;
 
 /**
  * @brief Message output rate enum.
  */
 typedef enum _ub7_output_rate_t {
-	UB7_OUTPUT_1HZ, UB7_OUTPUT_2HZ, UB7_OUTPUT_5HZ
+  UB7_OUTPUT_1HZ,
+  UB7_OUTPUT_2HZ,
+  UB7_OUTPUT_5HZ
 } ub7_output_rate_t;
 
 /**
  * @brief NMEA Messages enum.
  */
 typedef enum _ub7_message_t {
-	UB7_MSG_DTM = 0x0A, UB7_MSG_GBS = 0x09, UB7_MSG_GGA = 0x00, UB7_MSG_GLL = 0x01, UB7_MSG_GRS = 0x06, UB7_MSG_GSA = 0x02,
-	UB7_MSG_GST = 0x07, UB7_MSG_GSV = 0x03, UB7_MSG_RMC = 0x04, UB7_MSG_VTG = 0x05, UB7_MSG_ZDA = 0x08
+  UB7_MSG_DTM = 0x0A,
+  UB7_MSG_GBS = 0x09,
+  UB7_MSG_GGA = 0x00,
+  UB7_MSG_GLL = 0x01,
+  UB7_MSG_GRS = 0x06,
+  UB7_MSG_GSA = 0x02,
+  UB7_MSG_GST = 0x07,
+  UB7_MSG_GSV = 0x03,
+  UB7_MSG_RMC = 0x04,
+  UB7_MSG_VTG = 0x05,
+  UB7_MSG_ZDA = 0x08
 } ub7_message_t;
 
 /**
@@ -68,10 +90,13 @@ typedef enum _ub7_message_t {
  * @details Please do NOT change the structure directly.
  */
 typedef struct _ub7_config_t {
-	uart_port_t uart_num;
-	uart_config_t uart_conf;
+  uart_port_t uart_num;
+  uart_config_t uart_conf;
 } ub7_config_t;
 
+void ub7_enable(gpio_num_t en_pin);
+
+void ub7_disable(gpio_num_t en_pin);
 /**
  * @brief Initializes the serial communication for the GPS.
  *
@@ -89,8 +114,8 @@ typedef struct _ub7_config_t {
  *     - ESP_FAIL Parameter error
  */
 esp_err_t ub7_init(ub7_config_t *this, uart_port_t uart_num,
-		ub7_baud_rate_t baud, gpio_num_t tx_pin,
-		gpio_num_t rx_pin, gpio_num_t en_pin);
+    ub7_baud_rate_t baud, gpio_num_t tx_pin,
+    gpio_num_t rx_pin, gpio_num_t en_pin);
 
 /**
  * @brief Sets the GPS navigation mode.
@@ -144,7 +169,7 @@ esp_err_t ub7_set_output_rate(ub7_config_t *this, ub7_output_rate_t rate);
  *     - ESP_ERR_INVALID_CRC   Checksum for the wrong message received
  */
 esp_err_t ub7_set_message(ub7_config_t *this, ub7_message_t message,
-		bool active);
+    bool active);
 
 #endif
 

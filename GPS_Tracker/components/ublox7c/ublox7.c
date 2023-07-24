@@ -16,12 +16,22 @@
 #include "ublox7/ublox7.h"
 #include "ublox7/ubxmsg.h"
 
+void ub7_enable(gpio_num_t en_pin) {
+  gpio_set_direction(en_pin, GPIO_MODE_OUTPUT);
+  gpio_set_level(en_pin, true);
+  vTaskDelay(2000 / portTICK_RATE_MS);
+}
+
+void ub7_disable(gpio_num_t en_pin) {
+  gpio_set_direction(en_pin, GPIO_MODE_OUTPUT);
+  gpio_set_level(en_pin, false);
+  vTaskDelay(1000 / portTICK_RATE_MS);
+}
+
 esp_err_t ub7_init(ub7_config_t *this, uart_port_t uart_num, ub7_baud_rate_t baud, gpio_num_t tx_pin, gpio_num_t rx_pin,
                    gpio_num_t en_pin) {
 
-  gpio_set_direction(en_pin, GPIO_MODE_OUTPUT);
-  gpio_set_level(en_pin, true);
-  vTaskDelay(1000 / portTICK_RATE_MS);
+  ub7_enable(en_pin);
 
   this->uart_num = uart_num;
 

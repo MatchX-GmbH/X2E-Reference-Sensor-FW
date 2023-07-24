@@ -15,7 +15,10 @@
 #define GPS_QUEUE_SIZE 500
 #define GPS_INTERVAL 12
 
+#define COORD_AVG_SIZE 5
+
 double prev_lat = 0, prev_lon = 0;
+double prev_Average_lat = 0, prev_Average_lon = 0;
 
 GPSData_t GPSData;
 
@@ -77,6 +80,47 @@ double Update_Distance_RAW(double lat, double lon) {
   return GPSData.Total_Distance;
 }
 
+typedef struct {
+  double Lat;
+  double Lon;
+} coordinate_t;
+
+coordinate_t coord_List[COORD_AVG_SIZE];
+uint8_t coord_Pointer = 0;
+
+double Update_Distance_Average(double lat, double lon) {
+
+  coordinate_t coord = {
+      .Lat = lat,
+      .Lon = lon };
+
+  coord_List[coord_Pointer] = coord;
+  coord_Pointer++;
+
+  if (coord_Pointer == COORD_AVG_SIZE) {
+
+    coordinate_t avg_Coord = {
+        .Lat = 0,
+        .Lon = 0 };
+    coord_Pointer = 0;
+
+    for (uint8_t i = 0; i < COORD_AVG_SIZE; i++) {
+      avg_Coord.Lat += coord_List[i].Lat;
+      avg_Coord.Lon += coord_List[i].Lon;
+    }
+    avg_Coord.Lat /= (double) COORD_AVG_SIZE;
+    avg_Coord.Lon /= (double) COORD_AVG_SIZE;
+
+    if ((prev_Average_lat != 0) && (prev_Average_lon != 0)) {
+      GPSData.Total_Average_Distance += Spherical_Law_of_Cosines(prev_Average_lat, prev_Average_lon, avg_Coord.Lat, avg_Coord.Lon);
+    }
+    prev_Average_lat = avg_Coord.Lat;
+    prev_Average_lon = avg_Coord.Lon;
+  }
+
+  return GPSData.Total_Average_Distance;
+}
+
 void gps_event_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
   gps_t *gps = NULL;
   switch (event_id) {
@@ -86,26 +130,31 @@ void gps_event_handler(void *event_handler_arg, esp_event_base_t event_base, int
       GPSData.gps_data = *gps;
       bool Start_Measure = *Distance_Enable;
 
-//      printf("dop_h = %0.3f, dop_v = %0.3f, dop_p = %0.3f\n", gps->dop_h, gps->dop_v, gps->dop_p);
+      printf("valid %d fix %d fix_mode %d sats_in_use %d sats_in_view %d \n", gps->valid, gps->fix, gps->fix_mode, gps->sats_in_use,
+             gps->sats_in_view);
 
-      if ((gps->fix != GPS_FIX_INVALID) && (gps->dop_h <= dilution_of_precision) && (gps->dop_v <= dilution_of_precision)
+      for (int i = 0; i < gps->sats_in_view; i++)
+        printf("sats_Num : %d , sat_SNR = %d\n", gps->sats_desc_in_view[i].num, gps->sats_desc_in_view[i].snr);
+      printf("\n");
+
+      if ((gps->valid == true) && (gps->dop_h <= dilution_of_precision) && (gps->dop_v <= dilution_of_precision)  // Signal quality check
           && (gps->dop_p <= dilution_of_precision)) {
-
-//				printf("Lat = %0.3f, Lon = %0.3f, Alt = %0.3f\n", gps->latitude, gps->longitude, gps->altitude);
 
         if (((gps->speed > 0.7) && Start_Measure) || (gps->speed > 4.4)) {      // Check if not Idle
           Update_Distance_RAW(gps->latitude, gps->longitude);
+          Update_Distance_Average(gps->latitude, gps->longitude);
           gpio_set_level(USR_LED, 0);
         } else
           gpio_set_level(USR_LED, 1);
-//					printf("Total Distance = %0.3f,   Speed = %0.3f\n",Update_Distance_RAW(gps->latitude, gps->longitude),gps->speed);
+
         if (GPSDataCount >= GPS_INTERVAL) {
           xQueueSend(GPS_queue, (void* )&GPSData, (TickType_t )0);
           GPSDataCount = 0;
         } else
           GPSDataCount++;
 
-      }
+      } else
+        gpio_set_level(USR_LED, 1);
 
       break;
     default:
@@ -120,7 +169,7 @@ QueueHandle_t GPS_Distane_INIT(bool *Distance_Lock) {
   /* NMEA parser configuration */
   nmea_parser_config_t config = NMEA_PARSER_CONFIG_DEFAULT();
   /* init NMEA parser library */
-  nmea_parser_handle_t nmea_hdl = nmea_parser_init(&config, UB7_OUTPUT_1HZ);
+  nmea_parser_handle_t nmea_hdl = nmea_parser_init(&config);
   /* register event handler for NMEA parser library */
   nmea_parser_add_handler(nmea_hdl, gps_event_handler, NULL);
 
