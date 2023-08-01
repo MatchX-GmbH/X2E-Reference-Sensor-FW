@@ -1,30 +1,32 @@
 //==========================================================================
 //==========================================================================
-#ifndef INC_BOARD_H
-#define INC_BOARD_H
+#ifndef INC_BATTERY_H
+#define INC_BATTERY_H
 
 //==========================================================================
 //==========================================================================
-#include "freertos/FreeRTOS.h"
-#include "freertos/portmacro.h"
-#include "freertos/task.h"
-#include "sdkconfig.h"
+#include <stdbool.h>
+#include <stdint.h>
+#include <math.h>
 
 //==========================================================================
 //==========================================================================
-// SPI
-#define SPIHOST SPI3_HOST
-
-// I2C
-#define I2CNUM I2C_NUM_0
-
-//==========================================================================
-//==========================================================================
-void MxTargetInit(void);
-const char *MxTargetName(void);
-void MxTargetPrepareForSleep(void);
-void MxTargetResumeFromSleep(void);
+typedef struct {
+  float voltage;
+  float current;
+  float percentage;
+  uint16_t designCapacity;
+  uint16_t fullChargeCapacity;
+  uint16_t remainingCapacity;
+} BatteryInfo_t;
 
 //==========================================================================
 //==========================================================================
-#endif  // INC_BOARD_H
+void BatteryInit(void);
+void BatteryProcess(void);
+void BatteryGetInfo(BatteryInfo_t *aInfo);
+bool BatterySetDesignValue(uint16_t aCapacity, float aVoltage);
+
+//==========================================================================
+//==========================================================================
+#endif  // INC_BATTERY_H

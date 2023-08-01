@@ -6,6 +6,7 @@
 #include "mx_target.h"
 #include "task_priority.h"
 #include "debug.h"
+#include "esp_log.h"
 
 #include "app_op.h"
 
@@ -35,6 +36,9 @@ static void InitUsbJtagUart(void) {
 //==========================================================================
 //==========================================================================
 void app_main(void) {
+  // Turn off EPS log
+  esp_log_level_set("*", ESP_LOG_NONE);
+
   // Set task priority
   vTaskPrioritySet(NULL, TASK_PRIO_STARTING);
 
