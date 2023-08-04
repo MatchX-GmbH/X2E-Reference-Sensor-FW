@@ -22,6 +22,12 @@ menu "MatchX"
             and consuming less.
             When enable this, please remove all I2C pull-up resisters.
 
+    config MATCHX_ENABLE_DEEP_SLEEP
+        bool "Enable deep sleep"
+        default n
+        help
+            Put the device into deep sleep.
+
     config MATCHX_DEBUG
         bool "Show debug message"
         default n

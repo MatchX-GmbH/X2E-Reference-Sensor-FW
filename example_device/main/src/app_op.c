@@ -34,10 +34,16 @@
 //==========================================================================
 #define DelayMs(x) vTaskDelay(x / portTICK_PERIOD_MS)
 
+// config
+#if defined(CONFIG_MATCHX_ENABLE_DEEP_SLEEP)
+#define MATCHX_ENABLE_DEEP_SLEEP true
+#else
+#define MATCHX_ENABLE_DEEP_SLEEP false
+#endif
+
 // States
 typedef enum {
   S_IDLE = 0,
-  S_JOIN_WAIT,
   S_SAMPLE_DATA,
   S_SEND_DATA,
   S_SEND_DATA_WAIT,
@@ -48,7 +54,9 @@ typedef enum {
 #define VALUE_EXT_POWER_CURRENT_THRESHOLD -0.01
 
 // ms
-#define TIME_GO_TO_SLEEP_THRESHOLD  2000
+#define TIME_GO_TO_SLEEP_THRESHOLD 2000
+#define TIME_DEEP_SLEEP_THRESHOLD 30000
+#define INTERVAL_SENDING_DATA 120000
 
 //==========================================================================
 // Variables
@@ -62,7 +70,7 @@ static bool IsExtPower(void) {
   float batt_voltage;
   float batt_current;
   float batt_percentage;
-  
+
   SensorGetBattery(&batt_percentage, &batt_current, &batt_voltage);
 
   //
@@ -107,6 +115,24 @@ static void SendData(void) {
   LoRaComponSendData(buf, tx_len);
 }
 
+static void SendBlankFrame(void) {
+  float batt_voltage;
+  float batt_current;
+  float batt_percentage;
+  uint8_t buf[8];
+
+  SensorGetBattery(&batt_percentage, &batt_current, &batt_voltage);
+
+  //
+  if (batt_current >= VALUE_EXT_POWER_CURRENT_THRESHOLD) {
+    // Set reporting battery status to external power.
+    LoRaComponSetExtPower();
+  } else {
+    LoRaComponSetBatteryPercent(batt_percentage);
+  }
+  LoRaComponSendData(buf, 0);
+}
+
 //==========================================================================
 // Get Data from LoRa
 //==========================================================================
@@ -126,14 +152,18 @@ static void GetData(void) {
 //==========================================================================
 // Sleep
 //==========================================================================
-static void EnterSleep(uint32_t aTimeToSleep) {
+static void EnterSleep(uint32_t aTimeToSleep, bool aDeepSleep) {
   // Call all to prepare for sleep
   SensorPrepareForSleep();
-  LoRaComponPrepareForSleep();
+  LoRaComponPrepareForSleep(aDeepSleep);
   MxTargetPrepareForSleep();
 
   // Enter sleep
-  EnterLightSleep(aTimeToSleep, false);
+  if (aDeepSleep) {
+    EnterDeepSleep(aTimeToSleep, false);
+  } else {
+    EnterLightSleep(aTimeToSleep, false);
+  }
 
   // Wake up and call all to resume
   MxTargetResumeFromSleep();
@@ -144,12 +174,21 @@ static void EnterSleep(uint32_t aTimeToSleep) {
 //==========================================================================
 //==========================================================================
 static void AppOpTask(void *param) {
-  uint32_t interval = 120000;
+  uint32_t interval = INTERVAL_SENDING_DATA;
+  bool wake_from_sleep;
 
   PrintLine("Example Device (%s).", LoRaComponRegionName());
 
+  //
+  if (IsWakeByReset()) {
+    wake_from_sleep = false;
+  } else {
+    DEBUG_PRINTLINE("Wake up from sleep");
+    wake_from_sleep = true;
+  }
+
   // Kick start the LoRa component
-  LoRaComponStart();
+  LoRaComponStart(wake_from_sleep);
   PrintLine("LoRa component started.");
 
   // start main loop of AppOp.
@@ -162,7 +201,7 @@ static void AppOpTask(void *param) {
     switch (state_lora) {
       case S_IDLE:
         if (LoRaComponIsJoined()) {
-          LedSet(true);
+          LedSet(LED_MODE_ON, -1);
           if (LoRaComponIsIsm2400()) {
             PrintLine("Joined with ISM2400");
           } else {
@@ -170,21 +209,20 @@ static void AppOpTask(void *param) {
           }
           PrintLine("Data sending interval %ds.", interval / 1000);
           tick_lora = GetTick();
-          state_lora = S_JOIN_WAIT;
+          state_lora = S_SAMPLE_DATA;
         } else {
-          LedSet(false);
+          LedSet(LED_MODE_SLOW_BLINKING, -1);
           if (IsExtPower() == false) {
             uint32_t time_to_sleep = LoRaComponGetWaitingTime();
             if (time_to_sleep > TIME_GO_TO_SLEEP_THRESHOLD) {
               DEBUG_PRINTLINE("S_IDLE time_to_sleep=%u", time_to_sleep);
-              EnterSleep(time_to_sleep);
+              if ((MATCHX_ENABLE_DEEP_SLEEP) && (time_to_sleep >= TIME_DEEP_SLEEP_THRESHOLD)) {
+                EnterSleep(time_to_sleep, true);
+              } else {
+                EnterSleep(time_to_sleep, false);
+              }
             }
           }
-        }
-        break;
-      case S_JOIN_WAIT:
-        if (TickElapsed(tick_lora) >= 5000) {
-          state_lora = S_SEND_DATA;
         }
         break;
       case S_SAMPLE_DATA:
@@ -194,6 +232,7 @@ static void AppOpTask(void *param) {
         break;
       case S_SEND_DATA:
         // Send data
+        LedSet(LED_MODE_FAST_BLINKING, -1);
         SendData();
         tick_lora = GetTick();
         state_lora = S_SEND_DATA_WAIT;
@@ -212,11 +251,12 @@ static void AppOpTask(void *param) {
 
           if (time_to_sleep > TIME_GO_TO_SLEEP_THRESHOLD) {
             DEBUG_PRINTLINE("S_SEND_DATA_WAIT time_to_sleep=%u", time_to_sleep);
-            EnterSleep(time_to_sleep);
+            EnterSleep(time_to_sleep, false);
           }
         }
         break;
       case S_WAIT_INTERVAL: {
+        LedSet(LED_MODE_ON, -1);
         if (LoRaComponIsRxReady()) {
           GetData();
         }
@@ -225,13 +265,17 @@ static void AppOpTask(void *param) {
           tick_lora = GetTick();
           state_lora = S_SAMPLE_DATA;
         } else if (IsExtPower() == false) {
-          uint32_t time_to_sleep = interval - elapsed;
           uint32_t lora_waiting_time = LoRaComponGetWaitingTime();
 
+          uint32_t time_to_sleep = interval - elapsed;
           if (lora_waiting_time < time_to_sleep) time_to_sleep = lora_waiting_time;
           if (time_to_sleep > TIME_GO_TO_SLEEP_THRESHOLD) {
             DEBUG_PRINTLINE("S_WAIT_INTERVAL time_to_sleep=%u", time_to_sleep);
-            EnterSleep(time_to_sleep);
+            if ((MATCHX_ENABLE_DEEP_SLEEP) && (time_to_sleep >= TIME_DEEP_SLEEP_THRESHOLD)) {
+              EnterSleep(time_to_sleep, true);
+            } else {
+              EnterSleep(time_to_sleep, false);
+            }
           }
         }
         break;
@@ -266,9 +310,7 @@ int8_t AppOpInit(void) {
 
   //
   LedInit();
-  LedSet(false);
   SensorInit();
-
 
   // Create task
   if (xTaskCreate(AppOpTask, "AppOp", 4096, NULL, TASK_PRIO_GENERAL, &gAppOpHandle) != pdPASS) {
