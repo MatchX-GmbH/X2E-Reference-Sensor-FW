@@ -27,7 +27,7 @@
 // Variables
 //==========================================================================
 // Store at RTC area, will keep while sleep
-static RTC_DATA_ATTR unsigned long gTickEnterSleep;
+static RTC_DATA_ATTR uint32_t gTickEnterSleep;
 
 //==========================================================================
 // Set wakeup event
@@ -59,7 +59,7 @@ void EnterDeepSleep(uint32_t aTimeToSleep, bool aWakeByButton) {
 
   //
   gTickEnterSleep = GetTick();
-  DEBUG_PRINTLINE("DeepSleep gTickEnterSleep=%ld.", gTickEnterSleep);
+  DEBUG_PRINTLINE("DeepSleep gTickEnterSleep=%u.", gTickEnterSleep);
   esp_deep_sleep_start();
 
   // Failed
@@ -75,7 +75,7 @@ void EnterLightSleep(uint32_t aTimeToSleep, bool aWakeByButton) {
 
   //
   gTickEnterSleep = GetTick();
-  DEBUG_PRINTLINE("LightSleep gTickEnterSleep=%ld.", gTickEnterSleep);
+  DEBUG_PRINTLINE("LightSleep gTickEnterSleep=%u.", gTickEnterSleep);
   if (DEBUG) {
     vTaskDelay(100 / portTICK_PERIOD_MS);
   }
@@ -90,7 +90,7 @@ void EnterLightSleep(uint32_t aTimeToSleep, bool aWakeByButton) {
 //==========================================================================
 bool IsWakeByReset(void) {
   bool ret = false;
-  DEBUG_PRINTLINE("Wakeup gTickEnterSleep=%ld", gTickEnterSleep);
+  DEBUG_PRINTLINE("Wakeup gTickEnterSleep=%u", gTickEnterSleep);
   switch (esp_sleep_get_wakeup_cause()) {
     case ESP_SLEEP_WAKEUP_EXT1: {
       uint64_t wakeup_pin_mask = esp_sleep_get_ext1_wakeup_status();

@@ -115,11 +115,15 @@ int8_t SensorInit(void) {
 // Sleep
 //==========================================================================
 void SensorPrepareForSleep(void) {
-  vTaskSuspend(gSensorTaskHandle);
+  if (gSensorTaskHandle != NULL) {
+    vTaskSuspend(gSensorTaskHandle);
+  }
 }
 
 void SensorResumeFromSleep(void) {
-  vTaskResume(gSensorTaskHandle);
+  if (gSensorTaskHandle != NULL) {
+    vTaskResume(gSensorTaskHandle);
+  }
 }
 
 //==========================================================================
