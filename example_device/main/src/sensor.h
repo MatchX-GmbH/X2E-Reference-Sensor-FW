@@ -1,30 +1,20 @@
 //==========================================================================
 //==========================================================================
-#ifndef INC_BOARD_H
-#define INC_BOARD_H
+#ifndef INC_SENSOR_H
+#define INC_SENSOR_H
 
 //==========================================================================
 //==========================================================================
-#include "freertos/FreeRTOS.h"
-#include "freertos/portmacro.h"
-#include "freertos/task.h"
-#include "sdkconfig.h"
+#include "mx_target.h"
 
 //==========================================================================
 //==========================================================================
-// SPI
-#define SPIHOST SPI3_HOST
+int8_t SensorInit(void);
+void SensorPrepareForSleep(void);
+void SensorResumeFromSleep(void);
 
-// I2C
-#define I2CNUM I2C_NUM_0
-
-//==========================================================================
-//==========================================================================
-void MxTargetInit(void);
-const char *MxTargetName(void);
-void MxTargetPrepareForSleep(void);
-void MxTargetResumeFromSleep(void);
+void SensorGetBattery(float *aPrecentage, float *aCurrent, float *aVoltage);
 
 //==========================================================================
 //==========================================================================
-#endif  // INC_BOARD_H
+#endif // INC_SENSOR_OP_H

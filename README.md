@@ -20,7 +20,7 @@ Clone with submodules
 
 ```
 git clone --recurse-submodules \
-	git@gitlab.com:matchx/x2e_reference_sensor/x2e_ref-firmware.git
+	https://github.com/MatchX-GmbH/X2E-Reference-Sensor-FW.git
 ```
 
 
@@ -39,7 +39,7 @@ Add LoRa component to the new firmware.
 
 ```
 git submodule add \
-	git@gitlab.com:matchx/x2e_reference_sensor/x2e_ref-lora_compon.git \
+	https://github.com/MatchX-GmbH/X2E-Reference-Sensor-LoRa-lib.git \
 	new_device/components/lora_compon 
 ```
 

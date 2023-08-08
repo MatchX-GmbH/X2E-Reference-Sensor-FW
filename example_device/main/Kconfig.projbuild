@@ -13,4 +13,32 @@ menu "MatchX"
             bool "NEXUS"
 
     endchoice #MATCHX_TARGET_BOARD
+
+    config MATCHX_SLEEP_PULL_I2C_LOW
+        bool "Pull low I2C when sleep"
+        default n
+        help
+            By pulling the I2C low, the onboard BQ27220 I2C engine will enter sleep
+            and consuming less.
+            When enable this, please remove all I2C pull-up resisters.
+
+    config MATCHX_ENABLE_DEEP_SLEEP
+        bool "Enable deep sleep"
+        default n
+        help
+            Put the device into deep sleep.
+
+    config MATCHX_DEBUG
+        bool "Show debug message"
+        default n
+        help
+            Showing application debug message.
+
+    config MATCHX_BATTERY_DESING_CAPACITY
+        int "Design Capacity for the battery"
+        default 1200
+        range 0 30000
+        help
+            Set the design capacity for the battery in mAh.
+
 endmenu
