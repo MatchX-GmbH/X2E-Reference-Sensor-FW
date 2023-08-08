@@ -66,6 +66,8 @@ typedef struct {
   float acce_z;
 } lis2de12_acce_value_t;
 
+extern stmdev_ctx_t dev_ctx;
+
 esp_err_t lis2de12_initialization(i2c_port_t i2c_port, lis2de12_config_t *lis2de12_config);
 esp_err_t lis2de12_get_acce(lis2de12_acce_value_t *acce_value);
 bool lis2de12_Is_data_ready();
