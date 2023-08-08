@@ -1,6 +1,8 @@
 [submodule "example_device/components/lora_compon"]
 	path = example_device/components/lora_compon
-	url = git@gitlab.com:matchx/x2e_reference_sensor/x2e_ref-lora_compon.git
-[submodule "new_device/components/lora_compon"]
+	url = https://github.com/MatchX-GmbH/X2E-Reference-Sensor-LoRa-lib.git
+	branch = main
+[submodule "GPS_Tracker/components/lora_compon"]
 	path = GPS_Tracker/components/lora_compon
-	url = git@gitlab.com:matchx/x2e_reference_sensor/x2e_ref-lora_compon.git
+	url = https://github.com/MatchX-GmbH/X2E-Reference-Sensor-LoRa-lib.git
+	branch = main
