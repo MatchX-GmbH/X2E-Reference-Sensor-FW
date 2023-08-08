@@ -5,10 +5,19 @@
 
 #include "esp_log.h"
 #include "esp_err.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
+//==========================================================================
+// Variables
+//==========================================================================
+TaskHandle_t SensorsTaskHandle;
 
 esp_err_t BatteryStatusUpdate();
-void GPS_MeasureStart();
 uint16_t GPS_SendData();
-void Idle_Detection(void *args);
+esp_err_t AccelerometerInit();
+esp_err_t GPS_Init();
+esp_err_t SensorsInit();
+void SensorsTask(void *args);
 
 #endif /* MAIN_SRC_SENSORS_H_ */

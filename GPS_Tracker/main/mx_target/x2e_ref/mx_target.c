@@ -36,9 +36,10 @@
 #define AIR_INT GPIO_NUM_14
 #define USR_BUTTON GPIO_NUM_0
 #define GPS_PWR GPIO_NUM_38
+#define ACCEL_INT GPIO_NUM_3
 
 #define I2C_PORT I2C_NUM_0
-#define I2C_FREQ 50000
+#define I2C_FREQ 25000
 
 //==========================================================================
 //==========================================================================
@@ -57,6 +58,9 @@ static void InitGpio(void) {
 
   gpio_reset_pin(USR_BUTTON);
   gpio_set_direction(USR_BUTTON, GPIO_MODE_INPUT);
+
+  gpio_reset_pin(ACCEL_INT);
+  gpio_set_direction(ACCEL_INT, GPIO_MODE_INPUT);
 }
 
 //==========================================================================

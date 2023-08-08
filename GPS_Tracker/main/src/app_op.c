@@ -54,20 +54,20 @@ static TaskHandle_t gAppOpHandle = NULL;
 //==========================================================================
 // Send data to LoRa
 //==========================================================================
-static void SendData(void) {
-  float voltage0 = 3.21;
-  uint8_t buf[8];
-  uint8_t *ptr;
-
-  ptr = buf;
-  ptr += PackU8(ptr, (MX_DATATYPE_SENSOR | 5));
-  ptr += PackU8(ptr, MX_SENSOR_VOLTAGE);
-  ptr += PackFloat(ptr, voltage0);
-  uint16_t tx_len = ptr - buf;
-
-  Hex2String("Sending ", buf, tx_len);
-  LoRaComponSendData(buf, tx_len);
-}
+//static void SendData(void) {
+//  float voltage0 = 3.21;
+//  uint8_t buf[8];
+//  uint8_t *ptr;
+//
+//  ptr = buf;
+//  ptr += PackU8(ptr, (MX_DATATYPE_SENSOR | 5));
+//  ptr += PackU8(ptr, MX_SENSOR_VOLTAGE);
+//  ptr += PackFloat(ptr, voltage0);
+//  uint16_t tx_len = ptr - buf;
+//
+//  Hex2String("Sending ", buf, tx_len);
+//  LoRaComponSendData(buf, tx_len);
+//}
 
 //==========================================================================
 // Get Data from LoRa
@@ -103,7 +103,6 @@ static void AppOpTask(void *param) {
   for (;;) {
     vTaskDelay(500 / portTICK_PERIOD_MS);
 
-    //
     switch (state_lora) {
       case S_IDLE:
         if (LoRaComponIsJoined()) {
@@ -181,15 +180,24 @@ int8_t AppOpInit(void) {
   // LoRa hardware related init
   LoRaComponHwInit();
 
+  // Sensors Init
+  if (SensorsInit() != ESP_OK) {
+    printf("ERROR. Failed to Initialize Sensors.\n");
+    return -1;
+  }
+
   LedInit();
+  LedSet(true);
+  vTaskDelay(1000 / portTICK_PERIOD_MS);
   LedSet(false);
-//  vTaskDelay(10000 / portTICK_PERIOD_MS);
-//  esp_sleep_enable_ext0_wakeup(USR_BUTTON, 0);
-//  esp_deep_sleep_start();
 
-  GPS_MeasureStart();
+// Create tasks
+  SensorsTaskHandle = NULL;
+  if (xTaskCreate(SensorsTask, "Sensors", 4096, NULL, TASK_PRIO_GENERAL, &SensorsTaskHandle) != pdPASS) {
+    printf("ERROR. Failed to create Sensors task.\n");
+    return -1;
+  }
 
-//  Create task
   if (xTaskCreate(AppOpTask, "AppOp", 4096, NULL, TASK_PRIO_GENERAL, &gAppOpHandle) != pdPASS) {
     printf("ERROR. Failed to create AppOp task.\n");
     return -1;
