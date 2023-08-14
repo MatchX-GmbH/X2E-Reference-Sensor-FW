@@ -24,6 +24,11 @@
 #include "freertos/task.h"
 
 //==========================================================================
+// Defines
+//==========================================================================
+#define ACCEL_INT GPIO_NUM_3
+
+//==========================================================================
 // Variables
 //==========================================================================
 // Store at RTC area, will keep while sleep
@@ -39,11 +44,11 @@ static void SetWakeupEvent(uint32_t aTimeToSleep, bool aWakeByButton) {
   }
 
   if (aWakeByButton) {
-    const int ext_wakeup_pin_1 = 0;
+    const int ext_wakeup_pin_1 = ACCEL_INT;
     const uint64_t ext_wakeup_pin_1_mask = (1ULL << ext_wakeup_pin_1);
 
     DEBUG_PRINTLINE("Enabling EXT1 wakeup on pins GPIO%d", ext_wakeup_pin_1);
-    esp_sleep_enable_ext1_wakeup(ext_wakeup_pin_1_mask, ESP_EXT1_WAKEUP_ALL_LOW);
+    esp_sleep_enable_ext1_wakeup(ext_wakeup_pin_1_mask, ESP_EXT1_WAKEUP_ANY_HIGH);
   }
 
   // // Isolate GPIO26 pin from external circuits.
@@ -110,8 +115,41 @@ bool IsWakeByReset(void) {
     }
     case ESP_SLEEP_WAKEUP_UNDEFINED:
     default:
-      DEBUG_PRINTLINE("Not wake up from event.");
+      DEBUG_PRINTLINE("Not wake up from event.")
+      ;
       ret = true;
+      break;
+  }
+  return ret;
+}
+
+//==========================================================================
+// Is wake up by external signal
+//==========================================================================
+bool IsWakeByEXT1(void) {
+  bool ret = false;
+  DEBUG_PRINTLINE("Wakeup gTickEnterSleep=%u", gTickEnterSleep);
+  switch (esp_sleep_get_wakeup_cause()) {
+    case ESP_SLEEP_WAKEUP_EXT1: {
+      uint64_t wakeup_pin_mask = esp_sleep_get_ext1_wakeup_status();
+      if (wakeup_pin_mask != 0) {
+        int pin = __builtin_ffsll(wakeup_pin_mask) - 1;
+        DEBUG_PRINTLINE("Wake up from GPIO %d", pin);
+      } else {
+        DEBUG_PRINTLINE("Wake up from GPIO");
+      }
+      ret = true;
+      break;
+    }
+    case ESP_SLEEP_WAKEUP_TIMER: {
+      DEBUG_PRINTLINE("Wake up from timer.");
+      DEBUG_PRINTLINE("Time spent in sleep: %ldms", TickElapsed(gTickEnterSleep));
+      break;
+    }
+    case ESP_SLEEP_WAKEUP_UNDEFINED:
+    default:
+      DEBUG_PRINTLINE("Not wake up from event.")
+      ;
       break;
   }
   return ret;

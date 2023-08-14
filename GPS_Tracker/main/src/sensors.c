@@ -34,16 +34,22 @@
 #include "led.h"
 #include "sleep.h"
 
-#include "GPS_Distance.h"
-
 //==========================================================================
 // Defines
 //==========================================================================
 #define TAG "sensors.c"
 
 /********************************Idle detection ********************************/
-#define Idle_Accel_THRESHOLD 300     // Acceleration In mG
-#define Idle_Signal_Latch_Time 10000  // In milliseconds
+#define IDLE_ACCEL_THRESHOLD 300     // Acceleration In mG
+#define IDLE_LATCH_TIME 30000        // In milliseconds
+
+/********************************GPS Data Filter ********************************/
+#define MAX_RADIUS  10000         // Maximum radius of location (Accuracy) in millimeters
+#define MIN_SVS 5                 // Minimum number of space vehicles
+
+/********************************GPS Data Queue ********************************/
+#define GPS_QUEUE_SIZE 500        // Queue size to buffer coordinates, in case of the connection is lost and you need to track all points
+#define GPS_QUEUE_INTERVAL 20     // The time interval to push a new GPS Coordinates into the queue in seconds
 
 /********************************GPS Module ********************************/
 #define U_CFG_GNSS_MODULE_TYPE U_GNSS_MODULE_TYPE_M7
@@ -53,12 +59,8 @@
 #define U_CFG_APP_PIN_GNSS_ENABLE_POWER 38
 #define U_CFG_APP_PIN_GNSS_CTS  -1
 #define U_CFG_APP_PIN_GNSS_RTS  -1
-/********************************GPS Data Filter ********************************/
-#define MAX_RADIUS  10000         // Maximum radius of location in millimetres
-#define MIN_SVS 5                 // Minimum number of space vehicles
-#define GPS_QUEUE_SIZE 500
-#define GPS_INTERVAL 12
 
+/********************************Accelerometer ********************************/
 #define ACCEL_INT GPIO_NUM_3
 
 //==========================================================================
@@ -96,6 +98,7 @@ typedef struct {
   double TotalAverageDistance;  // In meters
 } GPSData_t;
 
+//RTC_DATA_ATTR GPSData_t GPSData;
 GPSData_t GPSData;
 
 uDeviceHandle_t devHandle = NULL;
@@ -113,6 +116,9 @@ lis2de12_config_t lis2de12_config = LIS2DE12_CONFIG_DEFAULT()
 bool isAwake = false;
 bool isFix = false;
 bool isMoving = false;
+bool isVehicle = false;
+//RTC_DATA_ATTR bool gReadyToSleep = false;
+bool gReadyToSleep = false;
 
 //==========================================================================
 // Get Battery status from the Battery monitor
@@ -135,6 +141,13 @@ esp_err_t BatteryStatusUpdate() {
     LoRaComponSetBatteryPercent((float) Bat_Monitor.socReg);
     return err;
   }
+}
+
+//==========================================================================
+// Transmit data
+//==========================================================================
+uint32_t DataWaiting() {
+  return (uint32_t) uxQueueMessagesWaiting(GPS_queue);
 }
 
 //==========================================================================
@@ -171,11 +184,11 @@ uint16_t GPS_SendData() {
 
       ptr += PackU8(ptr, MX_DATATYPE_SENSOR | 0x05);
       ptr += PackU8(ptr, MX_SENSOR_CURRENT);
-      ptr += PackFloat(ptr, (float32_t) (Bat_Monitor.currentReg));
+      ptr += PackFloat(ptr, (float32_t) (Bat_Monitor.currentReg / 1000.0));
 
       ptr += PackU8(ptr, MX_DATATYPE_SENSOR | 0x05);
       ptr += PackU8(ptr, MX_SENSOR_VOLTAGE);
-      ptr += PackFloat(ptr, (float32_t) (Bat_Monitor.voltReg));
+      ptr += PackFloat(ptr, (float32_t) (Bat_Monitor.voltReg / 1000.0));
 
       ptr += PackU8(ptr, MX_DATATYPE_SENSOR | 0x05);
       ptr += PackU8(ptr, MX_SENSOR_COUNTER32);
@@ -289,8 +302,8 @@ static void GPS_Callback(uDeviceHandle_t devHandle, int32_t errorCode, const uLo
     if ((GPSData.GPS_Data.svs >= MIN_SVS) && (GPSData.GPS_Data.radiusMillimetres <= MAX_RADIUS)) {  // Readings quality check
 
       isFix = true;
-
-      if (GPSDataCount >= GPS_INTERVAL) {
+      LedSet(LED_MODE_FAST_BLINKING, 2, 1);
+      if (GPSDataCount >= GPS_QUEUE_INTERVAL) {
         ESP_LOGI(TAG, "Add coordinate to queue.\n");
         xQueueSend(GPS_queue, (void* ) &GPSData, (TickType_t ) 0);
         GPSDataCount = 0;
@@ -301,31 +314,60 @@ static void GPS_Callback(uDeviceHandle_t devHandle, int32_t errorCode, const uLo
       if (((speed > 0.7) && isMoving) || (speed > 4.4)) {      // Check if not Idle
         GPSData.TotalDistance = UpdateRawDistance(latitude, longitude);
         GPSData.TotalAverageDistance = UpdateAverageDistance(latitude, longitude);
-//        LedSet(true);
+
+        if (speed > 4.4) {  // Check if it's a vehicle movement to neglect the Accelerometer movement detection
+          isVehicle = true;
+        } else {
+          isVehicle = false;
+        }
+
       } else {
-//        LedSet(false);
+
       }
 
     } else {
-//      LedSet(false);
+//      LedSet(LED_MODE_ON, -1);
     }
   }
+}
+
+//==========================================================================
+// Sleep
+//==========================================================================
+void SensorPrepareForSleep(void) {
+  if (gSensorTaskHandle != NULL) {
+    // Set gReadyToSleep flag
+    LedSet(LED_MODE_FAST_BLINKING, 5, 0);
+    vTaskDelay(5000 / portTICK_PERIOD_MS);
+    gReadyToSleep = true;
+    vTaskSuspend(gSensorTaskHandle);
+  }
+}
+
+void SensorResumeFromSleep(void) {
+  if (gSensorTaskHandle != NULL) {
+    // Reset gReadyToSleep flag
+    LedSet(LED_MODE_ON, -1, 0);
+    gReadyToSleep = false;
+    vTaskResume(gSensorTaskHandle);
+  }
+}
+
+bool SensorSleepReady(void) {
+  return gReadyToSleep;
 }
 
 //==========================================================================
 // Set GPS to sleep
 //==========================================================================
 static void GPS_Sleep() {
-  if (isAwake) {
-    ESP_LOGI(TAG, "Order to sleep.\n");
-    // Stop getting location
-    uLocationGetStop(devHandle);
-    ESP_LOGI(TAG, "Cancel uLocationGet.\n");
-    if (uGnssPwrOffBackup(devHandle) == 0) {
-      ESP_LOGI(TAG, "Backup.\n");
-      isAwake = false;
-      ESP_LOGI(TAG, "isAwake = false.\n");
-    }
+  ESP_LOGI(TAG, "Prepare GPS to sleep.\n");
+  // Stop getting location
+  uLocationGetStop(devHandle);
+  ESP_LOGI(TAG, "Cancel uLocationGet.\n");
+  if (uGnssPwrOffBackup(devHandle) == 0) {
+    ESP_LOGI(TAG, "GPS Backup mode.\n");
+    isAwake = false;
   }
 }
 
@@ -333,28 +375,24 @@ static void GPS_Sleep() {
 // Set GPS to wake-up
 //==========================================================================
 static void GPS_Wakeup() {
-  if (!isAwake) {
-    ESP_LOGI(TAG, "Order to wakeup.\n");
-    uLocationGetStop(devHandle);
-    isAwake = true;
-    ESP_LOGI(TAG, "isAwake = true.\n");
-    int32_t returnCode;
-    if (uGnssPwrOn(devHandle) == 0)
-      ESP_LOGI(TAG, "Wakeup.\n");
+  ESP_LOGI(TAG, "Prepare GPS to wake up.\n");
+  uLocationGetStop(devHandle);
+  isAwake = true;
+  int32_t returnCode;
+  if (uGnssPwrOn(devHandle) == 0)
+    ESP_LOGI(TAG, "GPS Woke up.\n");
 
-    ESP_LOGI(TAG, "Starting continuous location.\n");
-    returnCode = uLocationGetContinuousStart(devHandle, U_GNSS_POS_STREAMED_PERIOD_DEFAULT_MS, U_DEVICE_TYPE_GNSS, NULL, NULL,
-                                             GPS_Callback);
+  ESP_LOGI(TAG, "Starting continuous location.\n");
+  returnCode = uLocationGetContinuousStart(devHandle, U_GNSS_POS_STREAMED_PERIOD_DEFAULT_MS, U_DEVICE_TYPE_GNSS, NULL, NULL,
+                                           GPS_Callback);
 
-    ESP_LOGI(TAG, "Waiting up for location fixes. %d\n", returnCode);
-  }
+  ESP_LOGI(TAG, "Waiting up for location fixes. %d\n", returnCode);
 }
 
 //==========================================================================
 // Get Idle signal from the Accelerometer
 //==========================================================================
 static void IdleTimerCallback() {
-//  LedSet(false);
   isMoving = false;
 }
 
@@ -382,13 +420,12 @@ void SensorsTask(void *args) {
   lis2de12_pin_int2_config_set(&dev_ctx, &ctrl_reg6);
 
   // Set INT1 Threshold
-  lis2de12_int1_gen_threshold_set(&dev_ctx, Idle_Accel_THRESHOLD / 16.0);
+  lis2de12_int1_gen_threshold_set(&dev_ctx, IDLE_ACCEL_THRESHOLD / 16.0);
 
   // Set INT1 Duration
-  lis2de12_int1_gen_duration_set(&dev_ctx, 20);
+  lis2de12_int1_gen_duration_set(&dev_ctx, 10);
 
-  // Dummy read to force the HP filter to
-  // current acceleration value
+  // Dummy read to force the HP filter to current acceleration value
   uint8_t acc_ref;
   lis2de12_filter_reference_get(&dev_ctx, &acc_ref);
 
@@ -412,58 +449,61 @@ void SensorsTask(void *args) {
   ESP_LOGI(TAG, "Waiting up for location fixes. %d\n", returnCode);
   isAwake = true;
 
-//  while (!isFix) {
-//    vTaskDelay(10 / portTICK_PERIOD_MS);
-//  }
+  LedSet(LED_MODE_SLOW_BLINKING, -1, 0);
+  while (!isFix) {
+    vTaskDelay(10 / portTICK_PERIOD_MS);
+  }
 
-  vTaskDelay(10000 / portTICK_PERIOD_MS);
+  ESP_LOGI(TAG, "GPS Location Fixes Done.\n");
 
-  TimerHandle_t idleTimer = xTimerCreate("Move_Trigger", (Idle_Signal_Latch_Time / portTICK_RATE_MS), pdFALSE, 0,
-                                         IdleTimerCallback);
+//  vTaskDelay(420000 / portTICK_PERIOD_MS);
+
+  TimerHandle_t idleTimer = xTimerCreate("Move_Trigger", (IDLE_LATCH_TIME / portTICK_RATE_MS), pdFALSE, 0, IdleTimerCallback);
+  xTimerStart(idleTimer, 0);
+  isMoving = true;
+
+  LedSet(LED_MODE_ON, -1, 0);
+
   for (;;) {
 
     if (lis2de12_Is_data_ready()) {
       lis2de12_get_acce(&Accel);
+      // Dummy read to force the HP filter to current acceleration value
+      lis2de12_filter_reference_get(&dev_ctx, &acc_ref);
       Mag = sqrt(pow(Accel.acce_x, 2) + pow(Accel.acce_y, 2) + pow(Accel.acce_z, 2));
-      if (Mag > Idle_Accel_THRESHOLD) {
+      if ((Mag > IDLE_ACCEL_THRESHOLD) || isVehicle) {
         xTimerStart(idleTimer, 0);
         isMoving = true;
-//        LedSet(true);
       }
     }
 
     if (isMoving) {
-      GPS_Wakeup();
-    } else {
-      GPS_Sleep();
-      ESP_LOGI(TAG, "ESP Light Sleep.\n");
-//      esp_light_sleep_start();
-      EnterLightSleep(0, true);
-
-      for (uint8_t i = 0; i < 10; i++) {
-        LedSet(true);
-        vTaskDelay(50 / portTICK_PERIOD_MS);
-        LedSet(false);
-        vTaskDelay(50 / portTICK_PERIOD_MS);
+      if (!isAwake) {
+        GPS_Wakeup();
       }
+    } else {
+      if (isAwake) {
+        GPS_Sleep();
+      }
+      ESP_LOGI(TAG, "Sleep request.\n");
 
+      SensorPrepareForSleep();
+
+      ESP_LOGI(TAG, "Wake up.\n");
       xTimerStart(idleTimer, 0);
       isMoving = true;
     }
 
-    if (gpio_get_level(ACCEL_INT)) {
-      LedSet(true);
-      // Dummy read to force the HP filter to
-      // current acceleration value
-      lis2de12_filter_reference_get(&dev_ctx, &acc_ref);
-    } else {
-      LedSet(false);
-    }
+//    if (gpio_get_level(ACCEL_INT)) {
+//      LedSet(true);
+//    } else {
+//      LedSet(false);
+//    }
 
     vTaskDelay(10 / portTICK_PERIOD_MS);
   }
 
   ESP_LOGI(TAG, "SensorsTask ended.");
-  SensorsTaskHandle = NULL;
+  gSensorTaskHandle = NULL;
   vTaskDelete(NULL);
 }

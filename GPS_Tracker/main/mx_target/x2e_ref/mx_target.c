@@ -74,7 +74,7 @@ static void InitSpi(void) {
       .sclk_io_num = SPI1_SCK,
       .quadwp_io_num = -1,
       .quadhd_io_num = -1,
-      .max_transfer_sz = 32 };
+      .max_transfer_sz = 384 };
   esp_err_t ret = spi_bus_initialize(SPIHOST, &buscfg, SPI_DMA_CH_AUTO);
   if (ret != ESP_OK) {
     PrintLine("SPI bus init failed.");
@@ -87,6 +87,11 @@ static void InitSpi(void) {
 // Init I2C
 //==========================================================================
 static void InitI2c(void) {
+  gpio_hold_dis(I2C1_CLK);
+  gpio_hold_dis(I2C1_SDA);
+  gpio_reset_pin(I2C1_CLK);
+  gpio_reset_pin(I2C1_SDA);
+
   // Setup I2C bus
   i2c_config_t i2c = {
       .mode = I2C_MODE_MASTER,
@@ -100,7 +105,7 @@ static void InitI2c(void) {
 }
 
 //==========================================================================
-// Init of nexus board
+// Init of board
 //==========================================================================
 void MxTargetInit(void) {
   InitGpio();
@@ -113,4 +118,29 @@ void MxTargetInit(void) {
 //==========================================================================
 const char* MxTargetName(void) {
   return kMxTargetName;
+}
+
+//==========================================================================
+// Prepare before sleep
+//==========================================================================
+void MxTargetPrepareForSleep(void) {
+  // Remove I2C
+  i2c_driver_delete(I2C_PORT);
+
+#if defined (CONFIG_MATCHX_SLEEP_PULL_I2C_LOW)
+  // Set I2C pin to low
+  gpio_reset_pin(I2C1_CLK);
+  gpio_set_pull_mode(I2C1_CLK, GPIO_PULLDOWN_ONLY);
+  gpio_hold_en(I2C1_CLK);
+  gpio_reset_pin(I2C1_SDA);
+  gpio_set_pull_mode(I2C1_SDA, GPIO_PULLDOWN_ONLY);
+  gpio_hold_en(I2C1_SDA);
+#endif
+}
+
+//==========================================================================
+// Resume from Sleep
+//==========================================================================
+void MxTargetResumeFromSleep(void) {
+  InitI2c();
 }

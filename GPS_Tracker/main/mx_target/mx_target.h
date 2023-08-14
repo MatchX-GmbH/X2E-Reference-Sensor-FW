@@ -9,11 +9,12 @@
 #include "freertos/portmacro.h"
 #include "freertos/task.h"
 
-
 //==========================================================================
 //==========================================================================
 void MxTargetInit(void);
-const char *MxTargetName(void);
+const char* MxTargetName(void);
+void MxTargetPrepareForSleep(void);
+void MxTargetResumeFromSleep(void);
 
 //==========================================================================
 //==========================================================================

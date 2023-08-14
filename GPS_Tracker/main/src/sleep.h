@@ -13,6 +13,7 @@
 void EnterDeepSleep(uint32_t aTimeToSleep, bool aWakeByButton);
 void EnterLightSleep(uint32_t aTimeToSleep, bool aWakeByButton);
 bool IsWakeByReset(void);
+bool IsWakeByEXT1(void);
 
 //==========================================================================
 //==========================================================================

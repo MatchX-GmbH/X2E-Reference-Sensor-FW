@@ -11,13 +11,17 @@
 //==========================================================================
 // Variables
 //==========================================================================
-TaskHandle_t SensorsTaskHandle;
+TaskHandle_t gSensorTaskHandle;
 
 esp_err_t BatteryStatusUpdate();
+uint32_t DataWaiting();
 uint16_t GPS_SendData();
 esp_err_t AccelerometerInit();
 esp_err_t GPS_Init();
 esp_err_t SensorsInit();
 void SensorsTask(void *args);
+void SensorPrepareForSleep(void);
+void SensorResumeFromSleep(void);
+bool SensorSleepReady(void);
 
 #endif /* MAIN_SRC_SENSORS_H_ */
