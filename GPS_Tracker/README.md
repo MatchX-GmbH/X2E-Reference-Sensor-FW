@@ -32,19 +32,21 @@ https://github.com/MatchX-GmbH/X2E-Reference-Sensor-HW
 ## - Setup ESP-IDF
 This example supports and was tested with ESP-IDF version 4.4
 For detailed instructions to install ESP-IDF, please check:\
-[Windows Installer](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/get-started/windows-setup.html)
+[Windows installer](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/get-started/windows-setup.html) \
+[Linux development](https://docs.espressif.com/projects/esp-idf/en/v4.4.5/esp32s3/get-started/linux-setup.html)
 
 ## - Configuring the Project
 
 1. Clone or download this repository to your local machine.
 
 ```bash
-git clone https://github.com/MatchX-GmbH/x2e_reference_sensor.git
+git clone --recurse-submodules \
+	https://github.com/MatchX-GmbH/X2E_Reference_Sensor-FW.git
 ```
 2. RUN ESP-IDF 4.4 PowerShell or similar shell and navigate to the project directory in your machine
 
 ```bash
-cd D:\x2e_ref-firmware\GPS_Tracker
+cd X2E_Reference_Sensor-FW/GPS_Tracker
 ```
 3. Set the target MCU to ESP32 S3
 

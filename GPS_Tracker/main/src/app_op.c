@@ -50,7 +50,7 @@
 // LoRa Interval and Sleep Threshold in ms
 #define TIME_GO_TO_SLEEP_THRESHOLD 2000
 #define TIME_DEEP_SLEEP_THRESHOLD 30000
-#define INTERVAL_SENDING_DATA 10000
+#define INTERVAL_SENDING_DATA 120000
 
 // States
 typedef enum {
