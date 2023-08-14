@@ -95,7 +95,7 @@ flowchart TD
 
 ## - Project Settings
 
-Dependent on many factors there are some settings that have to be defined:
+Dependent on many factors some settings have to be defined:
 1. Idle Detection settings \
 You can set a limit for the minimum movement required to wake up the device and begin measuring activity. This ensures the device responds appropriately to any motion.
 Additionally, you can determine the minimum duration for the device to remain active after detecting movement, ensuring it stays awake for the desired duration. 
@@ -110,7 +110,7 @@ With these definitions, you can specify the acceptable data that will be used fo
 #define MIN_SVS 5                 // Minimum number of space vehicles
 ```
 3. Coordinates Average filter \
-This definition helps reduce interference in GPS data. It's best to keep the value under 10. If you set it higher, it might measure a shorter distance than the actual due to excessive filtering of corners and non-straight movements.
+This definition helps reduce the noise in GPS data. It's better to keep the value under 10. If you set it higher, it might measure a shorter distance than the actual due to excessive filtering of corners and non-straight movements.
 ```c
 #define COORD_AVG_SIZE 5
 ```
@@ -122,7 +122,7 @@ It is recommended to keep the GPS_QUEUE_INTERVAL to be longer than the INTERVAL_
 #define GPS_QUEUE_INTERVAL 20     // The time interval to push a new GPS Coordinates into the queue in seconds
 ```
 5. LoRa Interval and Sleep Threshold \
-Note: ==The deep sleep mode has not been implemented in this example yet==. \
+Note: The deep sleep mode has not been implemented in this example yet. \
 you can define the threshold time for light sleep mode. This sleep mode ensures that the device consumes less than 700uA of power until either the movement state is detected or the specified interval elapses.
 ```c
 #define TIME_GO_TO_SLEEP_THRESHOLD 2000    // In ms

@@ -155,7 +155,7 @@ uint16_t GPS_SendData() {
   uint8_t buf[64];
   uint8_t *ptr;
 
-  ESP_LOGI(TAG, "GPS_SendData.\n");
+//  ESP_LOGI(TAG, "GPS_SendData.\n");
   if (gGPS_queue) {
     if (xQueueReceive(gGPS_queue, &gGPS, (TickType_t) 5)) {
       ESP_LOGI(TAG, "Packing Data.\n");
@@ -405,27 +405,27 @@ void SensorsTask(void *args) {
   /********************************Set Accelerometer INT1 ********************************/
 
   // High-pass filter enabled on interrupt activity 1
-  lis2de12_high_pass_int_conf_set(&dev_ctx, LIS2DE12_ON_INT1_GEN);
+  lis2de12_high_pass_int_conf_set(&gDev_ctx, LIS2DE12_ON_INT1_GEN);
 
   // Interrupt activity 1 driven to INT1 pad
   lis2de12_ctrl_reg3_t ctrl_reg3 = {
       .i1_ia1 = 1 };
-  lis2de12_pin_int1_config_set(&dev_ctx, &ctrl_reg3);
+  lis2de12_pin_int1_config_set(&gDev_ctx, &ctrl_reg3);
 
   // Set INT1 Polarity
   lis2de12_ctrl_reg6_t ctrl_reg6 = {
       .int_polarity = 1 };
-  lis2de12_pin_int2_config_set(&dev_ctx, &ctrl_reg6);
+  lis2de12_pin_int2_config_set(&gDev_ctx, &ctrl_reg6);
 
   // Set INT1 Threshold
-  lis2de12_int1_gen_threshold_set(&dev_ctx, IDLE_ACCEL_THRESHOLD / 16.0);
+  lis2de12_int1_gen_threshold_set(&gDev_ctx, IDLE_ACCEL_THRESHOLD / 16.0);
 
   // Set INT1 Duration
-  lis2de12_int1_gen_duration_set(&dev_ctx, 10);
+  lis2de12_int1_gen_duration_set(&gDev_ctx, 10);
 
   // Dummy read to force the HP filter to current acceleration value
   uint8_t acc_ref;
-  lis2de12_filter_reference_get(&dev_ctx, &acc_ref);
+  lis2de12_filter_reference_get(&gDev_ctx, &acc_ref);
 
   // Configure desired wake-up event
   lis2de12_int1_cfg_t int1_cfg = {
@@ -434,7 +434,7 @@ void SensorsTask(void *args) {
       .zlie = 1,
       ._6d = 0,
       .aoi = 1 };
-  lis2de12_int1_gen_conf_set(&dev_ctx, &int1_cfg);
+  lis2de12_int1_gen_conf_set(&gDev_ctx, &int1_cfg);
 
   /********************************Set GPS Continuous Reading ********************************/
   // Switch off NMEA messages
@@ -467,7 +467,7 @@ void SensorsTask(void *args) {
     if (lis2de12_Is_data_ready()) {
       lis2de12_get_acce(&Accel);
       // Dummy read to force the HP filter to current acceleration value
-      lis2de12_filter_reference_get(&dev_ctx, &acc_ref);
+      lis2de12_filter_reference_get(&gDev_ctx, &acc_ref);
       Mag = sqrt(pow(Accel.acce_x, 2) + pow(Accel.acce_y, 2) + pow(Accel.acce_z, 2));
       if ((Mag > IDLE_ACCEL_THRESHOLD) || gIsVehicle) {
         xTimerStart(idleTimer, 0);

@@ -1,13 +1,9 @@
-/*
- * i2c_lis2de12.h
- *
- *  Created on: 30 Jun 2023
- *      Author: moham_em3gyci
- */
-
+//==========================================================================
+//==========================================================================
 #ifndef COMPONENTS_ACCEL_INCLUDE_LIS2DE12_H_
 #define COMPONENTS_ACCEL_INCLUDE_LIS2DE12_H_
-
+//==========================================================================
+//==========================================================================
 #include "lis2de12_reg.h"
 #include "esp_err.h"
 #include "driver/i2c.h"
@@ -66,7 +62,7 @@ typedef struct {
   float acce_z;
 } lis2de12_acce_value_t;
 
-extern stmdev_ctx_t dev_ctx;
+extern stmdev_ctx_t gDev_ctx;
 
 esp_err_t lis2de12_initialization(i2c_port_t i2c_port, lis2de12_config_t *lis2de12_config);
 esp_err_t lis2de12_get_acce(lis2de12_acce_value_t *acce_value);

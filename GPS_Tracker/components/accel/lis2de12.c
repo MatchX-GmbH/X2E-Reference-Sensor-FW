@@ -1,9 +1,19 @@
-/*
- * i2c_lis2de12.c
- *
- *  Created on: 30 Jun 2023
- *      Author: moham_em3gyci
- */
+//==========================================================================
+// Application
+//==========================================================================
+//  Copyright (c) MatchX GmbH.  All rights reserved.
+//==========================================================================
+// Naming conventions
+// ~~~~~~~~~~~~~~~~~~
+//                Class : Leading C
+//               Struct : Leading T
+//       typedef Struct : tailing _t
+//             Constant : Leading k
+//      Global Variable : Leading g
+//    Function argument : Leading a
+//       Local Variable : All lower case
+//==========================================================================
+
 #include "lis2de12.h"
 #include <string.h>
 #include "freertos/FreeRTOS.h"
@@ -14,7 +24,7 @@
 #define I2C_MASTER_TIMEOUT_MS		100000
 #define lis2de12_SENSOR_ADDR		0x30
 
-i2c_port_t lis2de12_i2c_port;
+i2c_port_t glis2de12_i2c_port;
 
 /* Private functions ---------------------------------------------------------*/
 /*
@@ -27,7 +37,7 @@ static int32_t platform_write(void *handle, uint8_t reg, const uint8_t *bufp, ui
 static int32_t platform_read(void *handle, uint8_t reg, uint8_t *bufp, uint16_t len);
 static void platform_delay(uint32_t ms);
 
-stmdev_ctx_t dev_ctx = {
+stmdev_ctx_t gDev_ctx = {
     .write_reg = platform_write,
     .read_reg = platform_read,
     .mdelay = platform_delay };
@@ -36,8 +46,8 @@ esp_err_t lis2de12_initialization(i2c_port_t i2c_port, lis2de12_config_t *lis2de
   /* Initialize mems driver interface */
   esp_err_t ret;
 
-  lis2de12_i2c_port = i2c_port;
-  lis2de12_config->Interfaces_Functions = &dev_ctx;
+  glis2de12_i2c_port = i2c_port;
+  lis2de12_config->Interfaces_Functions = &gDev_ctx;
 
   if (lis2de12_config == NULL) {
     ESP_LOGE(TAG, "lis2de12_Config_Error");
@@ -48,61 +58,61 @@ esp_err_t lis2de12_initialization(i2c_port_t i2c_port, lis2de12_config_t *lis2de
 
   uint8_t lis2de12_ID;
 
-  ret = lis2de12_device_id_get(&dev_ctx, &lis2de12_ID);
+  ret = lis2de12_device_id_get(&gDev_ctx, &lis2de12_ID);
   if ((ret != 0) || (lis2de12_ID != 0x33)) {
     ESP_LOGE(TAG, "lis2de12_Config_Error");
     return ESP_FAIL;
   }
 
-  ret = lis2de12_pin_sdo_sa0_mode_set(&dev_ctx, lis2de12_config->sdo_pu_disc);
+  ret = lis2de12_pin_sdo_sa0_mode_set(&gDev_ctx, lis2de12_config->sdo_pu_disc);
   if (ret != 0) {
     ESP_LOGE(TAG, "lis2de12_Config_Error");
     return ESP_FAIL;
   }
 
-  ret = lis2de12_temperature_meas_set(&dev_ctx, lis2de12_config->temp_enable);
+  ret = lis2de12_temperature_meas_set(&gDev_ctx, lis2de12_config->temp_enable);
   if (ret != 0) {
     ESP_LOGE(TAG, "lis2de12_Config_Error");
     return ESP_FAIL;
   }
 
-  ret = lis2de12_data_rate_set(&dev_ctx, lis2de12_config->odr);
+  ret = lis2de12_data_rate_set(&gDev_ctx, lis2de12_config->odr);
   if (ret != 0) {
     ESP_LOGE(TAG, "lis2de12_Config_Error");
     return ESP_FAIL;
   }
 
-  ret = lis2de12_high_pass_mode_set(&dev_ctx, lis2de12_config->hpm_mode);
+  ret = lis2de12_high_pass_mode_set(&gDev_ctx, lis2de12_config->hpm_mode);
   if (ret != 0) {
     ESP_LOGE(TAG, "lis2de12_Config_Error");
     return ESP_FAIL;
   }
 
-  ret = lis2de12_high_pass_on_outputs_set(&dev_ctx, lis2de12_config->fds);
+  ret = lis2de12_high_pass_on_outputs_set(&gDev_ctx, lis2de12_config->fds);
   if (ret != 0) {
     ESP_LOGE(TAG, "lis2de12_Config_Error");
     return ESP_FAIL;
   }
 
-  ret = lis2de12_high_pass_bandwidth_set(&dev_ctx, lis2de12_config->hpcf_cutoff);
+  ret = lis2de12_high_pass_bandwidth_set(&gDev_ctx, lis2de12_config->hpcf_cutoff);
   if (ret != 0) {
     ESP_LOGE(TAG, "lis2de12_Config_Error");
     return ESP_FAIL;
   }
 
-  ret = lis2de12_block_data_update_set(&dev_ctx, lis2de12_config->bdu_status);
+  ret = lis2de12_block_data_update_set(&gDev_ctx, lis2de12_config->bdu_status);
   if (ret != 0) {
     ESP_LOGE(TAG, "lis2de12_Config_Error");
     return ESP_FAIL;
   }
 
-  ret = lis2de12_full_scale_set(&dev_ctx, lis2de12_config->fs);
+  ret = lis2de12_full_scale_set(&gDev_ctx, lis2de12_config->fs);
   if (ret != 0) {
     ESP_LOGE(TAG, "lis2de12_Config_Error");
     return ESP_FAIL;
   }
 
-  ret = lis2de12_fifo_set(&dev_ctx, lis2de12_config->fifo_enable);
+  ret = lis2de12_fifo_set(&gDev_ctx, lis2de12_config->fifo_enable);
   if (ret != 0) {
     ESP_LOGE(TAG, "lis2de12_Config_Error");
     return ESP_FAIL;
@@ -113,7 +123,7 @@ esp_err_t lis2de12_initialization(i2c_port_t i2c_port, lis2de12_config_t *lis2de
 
 bool lis2de12_Is_data_ready() {
   lis2de12_reg_t reg;
-  esp_err_t ret = lis2de12_xl_data_ready_get(&dev_ctx, &reg.byte);
+  esp_err_t ret = lis2de12_xl_data_ready_get(&gDev_ctx, &reg.byte);
 
   if (ret != ESP_OK) {
     ESP_LOGE(TAG, "lis2de12_Read_Error");
@@ -129,7 +139,7 @@ bool lis2de12_Is_data_ready() {
 esp_err_t lis2de12_get_acce(lis2de12_acce_value_t *acce_value) {
   lis2de12_fs_t fs;
   lis2de12_raw_acce_value_t raw_acce_value;
-  esp_err_t ret = lis2de12_full_scale_get(&dev_ctx, &fs);
+  esp_err_t ret = lis2de12_full_scale_get(&gDev_ctx, &fs);
 
   if (ret != ESP_OK) {
     ESP_LOGE(TAG, "lis2de12_Read_Error");
@@ -138,7 +148,7 @@ esp_err_t lis2de12_get_acce(lis2de12_acce_value_t *acce_value) {
 
 //	lis2de12_reg_t reg;
 //	/* Read output only if new value available */
-//	ret = lis2de12_xl_data_ready_get(&dev_ctx, &reg.byte);
+//	ret = lis2de12_xl_data_ready_get(&gDev_ctx, &reg.byte);
 //
 //	if (ret != ESP_OK) {
 //		ESP_LOGE(TAG, "lis2de12_Read_Error");
@@ -148,7 +158,7 @@ esp_err_t lis2de12_get_acce(lis2de12_acce_value_t *acce_value) {
 //	if (reg.byte) {
   /* Read accelerometer data */
 
-  ret = lis2de12_acceleration_raw_get(&dev_ctx, (int16_t*) (&raw_acce_value));
+  ret = lis2de12_acceleration_raw_get(&gDev_ctx, (int16_t*) (&raw_acce_value));
   if (ret != ESP_OK) {
     ESP_LOGE(TAG, "lis2de12_Read_Error");
     return ESP_FAIL;
@@ -197,7 +207,7 @@ static int32_t platform_write(void *handle, uint8_t reg, const uint8_t *bufp, ui
   if (len > 0)
     memcpy(&buf[1], bufp, len);
 
-  ret = i2c_master_write_to_device(lis2de12_i2c_port, lis2de12_SENSOR_ADDR >> 1, buf, (len + 1),
+  ret = i2c_master_write_to_device(glis2de12_i2c_port, lis2de12_SENSOR_ADDR >> 1, buf, (len + 1),
   I2C_MASTER_TIMEOUT_MS / portTICK_RATE_MS);
 
   if (ret != ESP_OK) {
@@ -224,7 +234,7 @@ static int32_t platform_read(void *handle, uint8_t reg, uint8_t *bufp, uint16_t 
   reg |= 0x80;
   int ret;
 
-  ret = i2c_master_write_read_device(lis2de12_i2c_port, lis2de12_SENSOR_ADDR >> 1, &reg, 1, bufp, len,
+  ret = i2c_master_write_read_device(glis2de12_i2c_port, lis2de12_SENSOR_ADDR >> 1, &reg, 1, bufp, len,
   I2C_MASTER_TIMEOUT_MS / portTICK_RATE_MS);
 
   if (ret != ESP_OK) {
