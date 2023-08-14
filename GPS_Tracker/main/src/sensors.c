@@ -48,7 +48,7 @@
 #define MIN_SVS 5                 // Minimum number of space vehicles
 
 /********************************GPS Data Queue ********************************/
-#define GPS_QUEUE_SIZE 500        // Queue size to buffer coordinates, in case of the connection is lost and you need to track all points
+#define GPS_QUEUE_SIZE 500        // Queue size to buffer coordinates, in case of the connection is lost and you need to keep all data
 #define GPS_QUEUE_INTERVAL 20     // The time interval to push a new GPS Coordinates into the queue in seconds
 
 /********************************GPS Module ********************************/

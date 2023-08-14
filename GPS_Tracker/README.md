@@ -4,18 +4,18 @@
 
 [![ESP-IDF](https://img.shields.io/badge/ESP%20IDF-V4.4.5-green)](https://docs.espressif.com/projects/esp-idf/en/v4.4.5/esp32s3/get-started/index.html) [![MatchX](https://img.shields.io/badge/MatchX-X2E%20Sensor%20V1.1-blue)](https://github.com/MatchX-GmbH/X2E-Reference-Sensor-HW)
 
-## Example GPS_Tracker
+# Example GPS_Tracker
 
 This is an example GPS Tracker sensor that utilizes the LPWAN network (SubGHz and 2.4GHz). The project is completely open-source, allowing you to use it as a starting point for developing your custom sensor. With this example, you can easily track the device for a configurable period and measure the total distance traveled. The data is then transmitted using the LPWAN technology over either SubGHz or 2.4GHz frequencies.
 
-### Features
+# Features
 
 - Periodically sends coordinates and measures the total distance traveled.
 - Idle detection using GPS speed data and Accelerometer for accurate distance measurement.
 - Optional average filter to reduce total distance error.
 - Sleep mode when idle is detected.
 
-### Hardware Requirments
+# Hardware Requirments
 
 The following hardware components are used in this project:
 
@@ -28,13 +28,13 @@ The following hardware components are used in this project:
 Please refer to the MatchX X2E Reference Sensor HW repository:\
 https://github.com/MatchX-GmbH/X2E-Reference-Sensor-HW
 
-### Getting Started
-#### - Setup ESP-IDF
+# Getting Started
+## - Setup ESP-IDF
 This example supports and was tested with ESP-IDF version 4.4
 For detailed instructions to install ESP-IDF, please check:\
 [Windows Installer](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/get-started/windows-setup.html)
 
-#### - Configuring the Project
+## - Configuring the Project
 
 1. Clone or download this repository to your local machine.
 
@@ -64,7 +64,7 @@ idf.py build
 ```
 ![IDF_gif](Doc/idf.gif)
 
-#### - Project Structure 
+## - Project Structure 
 
 The project consists of three tasks:
 
@@ -78,7 +78,20 @@ The second task focuses on LPWAN communication and handles joining and sending d
 3. Application Task (AppOpTask) \
 This is the core task that acts as the central coordinator responsible for gathering data from sensors and forwarding it to the LoRa task. It also effectively manages the sleep mode, according to a user-defined interval and a trigger by specific sensor events, such as (idle detection).
 
-#### - Project Settings
+## - Sensor Task Flowchart
+```mermaid
+flowchart TD
+	Start((Start))-->Init(GPS & Accel Init)
+	Init-->StartGPS(Start Continuous GPS Reading) 
+	StartGPS-->WaitFix(Wait GPS to Fix)
+	WaitFix-->isGPSValid{is GPS Valid}--Yes-->Measure(Measure the distance & send Coordinates)
+	Measure----> isIdle{is Idle Detected}
+	isGPSValid--No--> isIdle{is Idle Detected}--Yes-->Sleep(GPS backup & sleep request)-->Wait(Wait Until wakeup)
+	Wait-->isGPSValid
+	isIdle{is Idle Detected}--No-->isGPSValid
+```
+
+## - Project Settings
 
 Dependent on many factors there are some settings that have to be defined:
 1. Idle Detection settings \
@@ -113,10 +126,10 @@ you can define the threshold time for light sleep mode. This sleep mode ensures 
 #define TIME_GO_TO_SLEEP_THRESHOLD 2000    // In ms
 #define INTERVAL_SENDING_DATA 120000       // In ms
 ```
-Please note that this example uses the backup mode in the GPS Ublox module to retain almanac and ephemeris data in its RTC memory. This mode consumes approximately 300 uA of power. To sustain its functionality while in low-power mode, an RTC battery or a suitable supercapacitor is necessary.
+Please note that this example uses the backup mode in the GPS Ublox module to retain almanac and ephemeris data in its RTC memory. This mode consumes approximately 300 uA. To sustain its functionality while in low-power mode, an RTC battery or a suitable supercapacitor is necessary.
 This setup enables a hot start in under 10 seconds for a quick GPS fix.
 
-### Contact
+# Contact
 
 For any questions or inquiries about the project, you can reach us at: \
 [MatchX contact us form](https://matchx.io/pages/contact-us) \
