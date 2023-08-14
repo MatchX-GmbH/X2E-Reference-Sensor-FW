@@ -2,3 +2,7 @@
 	path = example_device/components/lora_compon
 	url = https://github.com/MatchX-GmbH/X2E-Reference-Sensor-LoRa-lib.git
 	branch = main
+[submodule "GPS_Tracker/components/lora_compon"]
+	path = GPS_Tracker/components/lora_compon
+	url = https://github.com/MatchX-GmbH/X2E-Reference-Sensor-LoRa-lib.git
+	branch = main
