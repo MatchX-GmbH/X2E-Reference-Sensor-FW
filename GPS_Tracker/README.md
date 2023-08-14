@@ -62,7 +62,7 @@ idf.py menuconfig
 ```bash
 idf.py build
 ```
-![IDF_gif](idf.gif)
+![IDF_gif](Doc/idf.gif)
 
 #### - Project Structure 
 
