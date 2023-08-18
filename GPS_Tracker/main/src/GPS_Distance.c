@@ -35,8 +35,6 @@ coordinate_t gCoordList[COORD_AVG_SIZE];
 uint8_t gCoordPointer = 0;
 double gPrevLat = 0, gPrevLon = 0;
 double gPrevAverageLat = 0, gPrevAverageLon = 0;
-double gTotalAverageDistance;
-double gTotalDistance;
 
 /**
  * @brief converts decimal degrees to radians
@@ -79,19 +77,21 @@ static double Spherical_Law_of_Cosines(double aLat1, double aLon1, double aLat2,
   }
 }
 
-double UpdateRawDistance(double aLat, double aLon) {
+double UpdateRawDistance(double aLat, double aLon, double *aTotalDistance) {
+  double Delta = 0;
   if ((gPrevLat != 0) && (gPrevLon != 0)) {
-    gTotalDistance += Spherical_Law_of_Cosines(gPrevLat, gPrevLon, aLat, aLon);
+    Delta = Spherical_Law_of_Cosines(gPrevLat, gPrevLon, aLat, aLon);
+    *aTotalDistance += Delta;
   }
 
   gPrevLat = aLat;
   gPrevLon = aLon;
 
-  return gTotalDistance;
+  return Delta;
 }
 
-double UpdateAverageDistance(double aLat, double aLon) {
-
+double UpdateAverageDistance(double aLat, double aLon, double *aTotalAverageDistance) {
+  double Delta = 0;
   coordinate_t coord = {
       .Lat = aLat,
       .Lon = aLon };
@@ -114,12 +114,12 @@ double UpdateAverageDistance(double aLat, double aLon) {
     avg_Coord.Lon /= (double) COORD_AVG_SIZE;
 
     if ((gPrevAverageLat != 0) && (gPrevAverageLon != 0)) {
-      gTotalAverageDistance += Spherical_Law_of_Cosines(gPrevAverageLat, gPrevAverageLon, avg_Coord.Lat, avg_Coord.Lon);
+      Delta = Spherical_Law_of_Cosines(gPrevAverageLat, gPrevAverageLon, avg_Coord.Lat, avg_Coord.Lon);
+      *aTotalAverageDistance += Delta;
     }
     gPrevAverageLat = avg_Coord.Lat;
     gPrevAverageLon = avg_Coord.Lon;
   }
-
-  return gTotalAverageDistance;
+  return Delta;
 }
 

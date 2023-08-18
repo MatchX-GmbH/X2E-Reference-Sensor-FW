@@ -6,8 +6,8 @@
 
 //==========================================================================
 //==========================================================================
-double UpdateRawDistance(double aLat, double aLon);
-double UpdateAverageDistance(double aLat, double aLon);
+double UpdateRawDistance(double aLat, double aLon, double *aTotalDistance);
+double UpdateAverageDistance(double aLat, double aLon, double *aTotalAverageDistance);
 
 //==========================================================================
 //==========================================================================

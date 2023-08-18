@@ -1144,6 +1144,11 @@
 			<location>C:/Espressif/frameworks/esp-idf-v4.4.5/components/vfs/vfs_uart.c</location>
 		</link>
 		<link>
+			<name>build/ide/esp_idf_components/vfs/vfs_usb_serial_jtag.c</name>
+			<type>1</type>
+			<location>C:/Espressif/frameworks/esp-idf-v4.4.5/components/vfs/vfs_usb_serial_jtag.c</location>
+		</link>
+		<link>
 			<name>build/ide/esp_idf_components/wear_levelling/Partition.cpp</name>
 			<type>1</type>
 			<location>C:/Espressif/frameworks/esp-idf-v4.4.5/components/wear_levelling/Partition.cpp</location>

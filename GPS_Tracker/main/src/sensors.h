@@ -17,6 +17,7 @@ esp_err_t BatteryStatusUpdate();
 uint32_t DataWaiting();
 uint16_t GPS_SendData();
 esp_err_t AccelerometerInit();
+esp_err_t OdometerReset();
 esp_err_t GPS_Init();
 esp_err_t SensorsInit();
 void SensorsTask(void *args);
