@@ -41,12 +41,12 @@ For detailed instructions to install ESP-IDF, please check:\
 
 ```bash
 git clone --recurse-submodules \
-	https://github.com/MatchX-GmbH/X2E_Reference_Sensor-FW.git
+	https://github.com/MatchX-GmbH/X2E-Reference-Sensor-FW.git
 ```
 2. RUN ESP-IDF 4.4 PowerShell or similar shell and navigate to the project directory in your machine
 
 ```bash
-cd X2E_Reference_Sensor-FW/GPS_Tracker
+cd X2E-Reference-Sensor-FW/GPS_Tracker
 ```
 3. Set the target MCU to ESP32 S3
 
