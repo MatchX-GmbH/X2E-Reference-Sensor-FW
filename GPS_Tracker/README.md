@@ -77,7 +77,7 @@ This task handles the GPS tracking functionality. The sensor task periodically r
 The second task focuses on LPWAN communication and handles joining and sending data over (SubGHz or 2.4GHz) networks, For more details please check:\
 [X2E-Reference-Sensor-LoRa-lib](https://github.com/MatchX-GmbH/X2E-Reference-Sensor-LoRa-lib). \
 For the Payload format Please refer to this link: \
-[LoRa Payload Format](https://dev.mxc.org/docs/tutorials/devices/payload). \
+[LoRa Payload Format](https://dev.mxc.org/docs/tutorials/devices/payload).
 
 3. Application Task (AppOpTask) \
 This core task acts as the central coordinator responsible for gathering data from sensors and forwarding it to the LoRa task. It also effectively manages the sleep mode, according to a user-defined interval and a trigger by specific sensor events, such as (idle detection).
