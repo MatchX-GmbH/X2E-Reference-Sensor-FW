@@ -24,6 +24,7 @@
 #include "GPS_Distance.h"
 #include "esp_sleep.h"
 
+#include "app_data.h"
 #include "app_utils.h"
 #include "lora_compon.h"
 #include "packer.h"
@@ -33,6 +34,7 @@
 #include "ubxlib.h"
 #include "led.h"
 #include "sleep.h"
+#include "nvs_flash.h"
 
 //==========================================================================
 // Defines
@@ -49,7 +51,7 @@
 
 /********************************GPS Data Queue ********************************/
 #define GPS_QUEUE_SIZE 500        // Queue size to buffer coordinates, in case of the connection is lost and you need to keep all data
-#define GPS_QUEUE_INTERVAL 150     // The time interval to push a new GPS Coordinates into the queue in seconds
+#define GPS_QUEUE_INTERVAL 12     // The time interval to push a new GPS Coordinates into the queue in seconds
 
 /********************************GPS Module ********************************/
 #define U_CFG_GNSS_MODULE_TYPE U_GNSS_MODULE_TYPE_M7
@@ -96,9 +98,12 @@ typedef struct {
   uLocation_t GPS_Data;
   double TotalDistance;         // In meters
   double TotalAverageDistance;  // In meters
+  double Odometer;
 } GPSData_t;
 
 GPSData_t gGPSData;
+
+AppData_t *NVS;
 
 uDeviceHandle_t gDevHandle = NULL;
 
@@ -168,6 +173,10 @@ uint16_t GPS_SendData() {
       ptr += PackU8(ptr, MX_DATATYPE_SENSOR | 0x05);
       ptr += PackU8(ptr, MX_SENSOR_DISTANCE);
       ptr += PackFloat(ptr, (float32_t) (gGPS.TotalDistance * 1000));
+
+      ptr += PackU8(ptr, MX_DATATYPE_SENSOR | 0x05);
+      ptr += PackU8(ptr, MX_SENSOR_DISTANCE);
+      ptr += PackFloat(ptr, (float32_t) (gGPS.Odometer * 1000));
 
       ptr += PackU8(ptr, MX_DATATYPE_SENSOR | 0x0C);
       ptr += PackU8(ptr, MX_SENSOR_GPS);
@@ -269,12 +278,38 @@ esp_err_t GPS_Init() {
 
   return ESP_FAIL;
 }
+//==========================================================================
+// Odometer reset
+//==========================================================================
+esp_err_t OdometerReset() {
+  nvs_flash_erase();
+  if (AppDataInit() != ESP_OK) {
+    return ESP_FAIL;
+  }
+
+  NVS = AppDataGet();
+
+  gGPSData.Odometer = NVS->distance;
+
+  ESP_LOGI(TAG, "Odometer = %lf", gGPSData.Odometer);
+  return ESP_OK;
+}
 
 //==========================================================================
 // Sensors Task
 //==========================================================================
 esp_err_t SensorsInit() {
   esp_err_t returnCode;
+
+  if (AppDataInit() != ESP_OK) {
+    return ESP_FAIL;
+  }
+
+  NVS = AppDataGet();
+
+  gGPSData.Odometer = NVS->distance;
+
+  ESP_LOGI(TAG, "Odometer = %lf", gGPSData.Odometer);
 
   returnCode = AccelerometerInit();
 
@@ -310,8 +345,14 @@ static void GPS_Callback(uDeviceHandle_t gDevHandle, int32_t errorCode, const uL
       }
 
       if (((speed > 0.7) && gIsMoving) || (speed > 4.4)) {      // Check if not Idle
-        gGPSData.TotalDistance = UpdateRawDistance(latitude, longitude);
-        gGPSData.TotalAverageDistance = UpdateAverageDistance(latitude, longitude);
+        UpdateRawDistance(latitude, longitude, &gGPSData.TotalDistance);
+        double avg_delta = UpdateAverageDistance(latitude, longitude, &gGPSData.TotalAverageDistance);
+
+        if (avg_delta != 0) {
+          gGPSData.Odometer += avg_delta;
+          NVS->distance = gGPSData.Odometer;
+          AppDataSaveToStorage();
+        }
 
         if (speed > 4.4) {  // Check if it's a vehicle movement to neglect the Accelerometer movement detection
           gIsVehicle = true;
