@@ -6,7 +6,7 @@
 
 # Example GPS_Tracker
 
-This is an example GPS Tracker sensor that utilizes the LPWAN network (SubGHz and 2.4GHz). The project is completely open-source, allowing you to use it as a starting point for developing your custom sensor. With this example, you can easily track the device for a configurable period and measure the total distance traveled. The data is then transmitted using the LPWAN technology over either SubGHz or 2.4GHz frequencies.
+This is an example GPS Tracker sensor that utilizes the LPWAN network (subGHz and 2.4GHz). The project is completely open-source, allowing you to use it as a starting point for developing your custom sensor. With this example, you can easily track the device for a configurable period and measure the total distance traveled. The data is then transmitted using the LPWAN technology over either subGHz or 2.4GHz frequencies.
 
 # Features
 
@@ -75,10 +75,12 @@ This task handles the GPS tracking functionality. The sensor task periodically r
 
 2. LoRa Task \
 The second task focuses on LPWAN communication and handles joining and sending data over (SubGHz or 2.4GHz) networks, For more details please check:\
-[X2E-Reference-Sensor-LoRa-lib](https://github.com/MatchX-GmbH/X2E-Reference-Sensor-LoRa-lib).
+[X2E-Reference-Sensor-LoRa-lib](https://github.com/MatchX-GmbH/X2E-Reference-Sensor-LoRa-lib). \
+For the Payload format Please refer to this link: \
+[LoRa Payload Format](https://dev.mxc.org/docs/tutorials/devices/payload). \
 
 3. Application Task (AppOpTask) \
-This is the core task that acts as the central coordinator responsible for gathering data from sensors and forwarding it to the LoRa task. It also effectively manages the sleep mode, according to a user-defined interval and a trigger by specific sensor events, such as (idle detection).
+This core task acts as the central coordinator responsible for gathering data from sensors and forwarding it to the LoRa task. It also effectively manages the sleep mode, according to a user-defined interval and a trigger by specific sensor events, such as (idle detection).
 
 ## - Sensor Task Flowchart
 ```mermaid
@@ -115,15 +117,15 @@ This definition helps reduce the noise in GPS data. It's better to keep the valu
 #define COORD_AVG_SIZE 5
 ```
 4. GPS Data Queue \
-This feature enables storing a set of coordinates temporarily until the transmitter can successfully send the data.
-It is recommended to keep the GPS_QUEUE_INTERVAL to be longer than the INTERVAL_SENDING_DATA
+This feature temporarily stores a set of coordinates until the transmitter can successfully send the data.
+It is recommended to keep the GPS_QUEUE_INTERVAL longer than the INTERVAL_SENDING_DATA
 ```c
 #define GPS_QUEUE_SIZE 500        // Queue size to buffer coordinates, in case of the connection is lost and you need to keep all data
 #define GPS_QUEUE_INTERVAL 20     // The time interval to push a new GPS Coordinates into the queue in seconds
 ```
 5. LoRa Interval and Sleep Threshold \
-Note: The deep sleep mode has not been implemented in this example yet. \
-you can define the threshold time for light sleep mode. This sleep mode ensures that the device consumes less than 700uA of power until either the movement state is detected or the specified interval elapses.
+Note: This example has not yet implemented The deep sleep mode. \
+You can define the threshold time for light sleep mode. This sleep mode ensures that the device consumes less than 700uA of power until either the movement state is detected or the specified interval elapses.
 ```c
 #define TIME_GO_TO_SLEEP_THRESHOLD 2000    // In ms
 #define INTERVAL_SENDING_DATA 120000       // In ms
