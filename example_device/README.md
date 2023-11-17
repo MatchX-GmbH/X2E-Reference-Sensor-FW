@@ -31,11 +31,11 @@ This is an example LoRa device. It using the LoRa Component to connect to the Lo
 
 
 
-# Main software structure
+## Main software structure
 
 ![SoftwareStructure](doc/SoftwareStructure.png)
 
-# Flow for AppOp
+## Flow for AppOp
 
 ```mermaid
 flowchart TD
@@ -59,6 +59,40 @@ flowchart TD
 
 
 
-# Hints for low power
+## Hints for low power
 
 To achieve a lower power consumption during sleep, please remove the two pull-up resistors on I2C bus and enable `MATCHX_SLEEP_PULL_I2C_LOW`. Therefore, the I2C pin will pull low during sleep and makes the battery management IC (BQ27220) using less power.
+
+
+
+## Console commands
+
+The default console is vis the USB connection. The command format is line based and AT like. A success command will return a `OK` string. If there is response, it will return before the `OK`.
+
+#### Command List
+
+| Command             | Description                                                  |
+| ------------------- | ------------------------------------------------------------ |
+| AT+CQRCODE?         | Get the QR Code string. It is in JSON format and included the Provision ID (PID). It should equal to the QR-Code label printed on the device. |
+| AT+CQRCODE=*string* | Set the QR Code string. Maximum 127 characters.              |
+| AT+CLORA?           | Get the LoRa information, such as DevEUI.                    |
+| AT+IREBOOT=0        | Soft reset the device.                                       |
+| AT+IREBOOT=8        | Reset app data and LoRa data to default values.<br />The settings (QR Code) will remain unchanged. |
+
+Example - Set QR Code:
+
+```
+AT+CQRCODE={"PID":"PIDOOOOOOOOOOOOOOOOOOOOO","B":"MatchX","M":"X2E","V":"1.1"}
+OK
+```
+
+
+
+Example - Get QR Code:
+
+```
+AT+CQRCODE?
++CQRCODE:{"PID":"PIDOOOOOOOOOOOOOOOOOOOOO","B":"MatchX","M":"X2E","V":"1.1"}
+OK
+```
+

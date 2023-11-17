@@ -66,9 +66,9 @@ static void SensorTask(void *param) {
   BatteryGetInfo(&gBatteryInfo);
   if (gBatteryInfo.designCapacity != MATCHX_BATTERY_DESING_CAPACITY) {
     if (BatterySetDesignValue(MATCHX_BATTERY_DESING_CAPACITY, BATTERY_DESING_VOLTAGE)) {
-      PrintLine("Change design capacity to %dmAh %.2fV success.", MATCHX_BATTERY_DESING_CAPACITY, BATTERY_DESING_VOLTAGE);
+      PrintLine("INFO. Change design capacity to %dmAh %.2fV success.", MATCHX_BATTERY_DESING_CAPACITY, BATTERY_DESING_VOLTAGE);
     } else {
-      PrintLine("Change design capacity failed.");
+      PrintLine("WARNING. Change design capacity failed.");
     }
   }
 
@@ -104,7 +104,7 @@ int8_t SensorInit(void) {
 
   // Create task
   if (xTaskCreate(SensorTask, "Sensor", 4096, NULL, TASK_PRIO_GENERAL, &gSensorTaskHandle) != pdPASS) {
-    printf("ERROR. Failed to create Sensor task.\n");
+    PrintLine("ERROR. Failed to create Sensor task.");
     return -1;
   } else {
     return 0;

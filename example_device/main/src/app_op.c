@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "app_data.h"
 #include "app_utils.h"
 #include "debug.h"
 #include "led.h"
@@ -26,8 +27,12 @@
 #include "matchx_payload.h"
 #include "packer.h"
 #include "sensor.h"
+#include "sha256.h"
 #include "sleep.h"
 #include "task_priority.h"
+
+#define JSMN_HEADER
+#include "jsmn.h"
 
 //==========================================================================
 // Defines
@@ -44,6 +49,7 @@
 // States
 typedef enum {
   S_IDLE = 0,
+  S_WAIT_JOIN,
   S_SAMPLE_DATA,
   S_SEND_DATA,
   S_SEND_DATA_WAIT,
@@ -57,6 +63,12 @@ typedef enum {
 #define TIME_GO_TO_SLEEP_THRESHOLD 2000
 #define TIME_DEEP_SLEEP_THRESHOLD 30000
 #define INTERVAL_SENDING_DATA 120000
+
+//==========================================================================
+// Constants
+//==========================================================================
+// PID hash
+static const char *kPidHashSuffix = ".MatchX";
 
 //==========================================================================
 // Variables
@@ -111,7 +123,7 @@ static void SendData(void) {
 
   uint16_t tx_len = ptr - buf;
 
-  Hex2String("Sending ", buf, tx_len);
+  Hex2String("INFO. Sending ", buf, tx_len);
   LoRaComponSendData(buf, tx_len);
 }
 
@@ -142,9 +154,9 @@ static void GetData(void) {
 
   int32_t rx_len = LoRaComponGetData(buf, sizeof(buf), &info);
   if (rx_len < 0) {
-    PrintLine("Rx error.");
+    PrintLine("ERROR. LoRaComponGetData failed.");
   } else {
-    PrintLine("Rxed %d bytes. fport=%d, rssi=%d, datarate=%d", rx_len, info.fport, info.rssi, info.datarate);
+    PrintLine("INFO. Rxed %d bytes. fport=%d, rssi=%d, datarate=%d", rx_len, info.fport, info.rssi, info.datarate);
     Hex2String("  ", buf, rx_len);
   }
 }
@@ -172,12 +184,106 @@ static void EnterSleep(uint32_t aTimeToSleep, bool aDeepSleep) {
 }
 
 //==========================================================================
+// JSON helper
+//==========================================================================
+static char gSearchJsonKey[64];
+static char gSearchJsonValue[64];
+
+static void copyJsonToken(char *aDest, int aDestSize, const char *aJson, const jsmntok_t *aToken) {
+  int len = aToken->end - aToken->start;
+  if (len > (aDestSize - 1)) len = aDestSize - 1;
+  strncpy(aDest, aJson + aToken->start, len);
+  aDest[len] = 0;
+}
+
+static int getJsonString(const char *aJson, const jsmntok_t *aToken, int aTokenCount, const char *aKey, char *aValue,
+                         size_t aValueSize) {
+  memset(aValue, 0, aValueSize);
+  for (int i = 1; i < aTokenCount; i++) {
+    copyJsonToken(gSearchJsonKey, sizeof(gSearchJsonKey), aJson, &aToken[i]);
+
+    if ((aToken[i].type == JSMN_STRING) && (strncmp(aKey, gSearchJsonKey, sizeof(gSearchJsonKey)) == 0)) {
+      if (aToken[i + 1].type == JSMN_STRING) {
+        copyJsonToken(gSearchJsonValue, sizeof(gSearchJsonValue), aJson, &aToken[i + 1]);
+        strncpy(aValue, gSearchJsonValue, aValueSize - 1);
+      }
+      return 0;
+    }
+  }
+  PrintLine("WARNING. JSON Token %s not found.", aKey);
+  return -1;
+}
+
+//==========================================================================
+// Kick start LoRa
+//==========================================================================
+static void KickStartLoRa(bool aWakeFromSleep) {
+  char pid[32];
+  uint8_t pid_hash[SHA256_BLOCK_SIZE];
+  AppSettings_t *settings = AppSettingsGet();
+  bool msg_shown = false;
+
+  // Wait until PID is ready
+  for (;;) {
+    // Try read PID from AppSettings
+    memset(pid, 0, sizeof(pid));
+    memset(pid_hash, 0, sizeof(pid_hash));
+    if (AppDataTakeMutex()) {
+      if (strlen(settings->qrCode) > 0) {
+        jsmn_parser j_parser;
+        jsmntok_t j_tokens[16];
+
+        jsmn_init(&j_parser);
+
+        int j_ret =
+            jsmn_parse(&j_parser, settings->qrCode, strlen(settings->qrCode), j_tokens, sizeof(j_tokens) / sizeof(jsmntok_t));
+        if (j_ret < 0) {
+          PrintLine("ERROR. QRCODE JSON resp parse error.");
+        } else if ((j_ret < 1) || (j_tokens[0].type != JSMN_OBJECT)) {
+          PrintLine("ERROR. QRCODE JSON resp invalid format.");
+        } else {
+          if (getJsonString(settings->qrCode, j_tokens, j_ret, "PID", pid, sizeof(pid)) == 0) {
+            SHA256_CTX ctx;
+
+            sha256_init(&ctx);
+            sha256_update(&ctx, (const uint8_t *)pid, strlen(pid));
+            sha256_update(&ctx, (const uint8_t *)kPidHashSuffix, strlen(kPidHashSuffix));
+            sha256_final(&ctx, pid_hash);
+
+            DEBUG_PRINTLINE("PID: %s", pid);
+            DEBUG_HEX2STRING("HASH: ", pid_hash, sizeof(pid_hash));
+          } else {
+            memset(pid, 0, sizeof(pid));
+            memset(pid_hash, 0, sizeof(pid_hash));
+          }
+        }
+      }
+      AppDataFreeMutex();
+    }
+
+    // Got PID, kick start LoRa and return
+    if (strlen(pid) > 0) {
+      LoRaComponStart(pid, pid_hash, aWakeFromSleep);
+      PrintLine("INFO. LoRa component started.");
+      break;
+    }
+
+    //
+    if (!msg_shown) {
+      PrintLine("WARNING. PID not found. Waiting...");
+      msg_shown = true;
+    }
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+  }
+}
+
+//==========================================================================
 //==========================================================================
 static void AppOpTask(void *param) {
   uint32_t interval = INTERVAL_SENDING_DATA;
   bool wake_from_sleep;
 
-  PrintLine("Example Device (%s).", LoRaComponRegionName());
+  PrintLine("INFO. Example Device (%s).", LoRaComponRegionName());
 
   //
   if (IsWakeByReset()) {
@@ -186,10 +292,7 @@ static void AppOpTask(void *param) {
     DEBUG_PRINTLINE("Wake up from sleep");
     wake_from_sleep = true;
   }
-
-  // Kick start the LoRa component
-  LoRaComponStart(wake_from_sleep);
-  PrintLine("LoRa component started.");
+  KickStartLoRa(wake_from_sleep);
 
   // start main loop of AppOp.
   uint32_t tick_lora;
@@ -200,14 +303,20 @@ static void AppOpTask(void *param) {
     //
     switch (state_lora) {
       case S_IDLE:
+        if (LoRaComponIsProvisioned()) {
+          PrintLine("INFO. Device is provisioned.");
+          state_lora = S_WAIT_JOIN;
+        }
+        break;
+      case S_WAIT_JOIN:
         if (LoRaComponIsJoined()) {
           LedSet(LED_MODE_ON, -1);
           if (LoRaComponIsIsm2400()) {
-            PrintLine("Joined with ISM2400");
+            PrintLine("INFO. Joined with ISM2400");
           } else {
-            PrintLine("Joined with sub-GHz");
+            PrintLine("INFO. Joined with sub-GHz");
           }
-          PrintLine("Data sending interval %ds.", interval / 1000);
+          PrintLine("INFO. Data sending interval %ds.", interval / 1000);
           tick_lora = GetTick();
           state_lora = S_SAMPLE_DATA;
         } else {
@@ -240,9 +349,9 @@ static void AppOpTask(void *param) {
       case S_SEND_DATA_WAIT:
         if (LoRaComponIsSendDone()) {
           if (LoRaComponIsSendSuccess()) {
-            PrintLine("Send data success.");
+            PrintLine("INFO. Send data success.");
           } else {
-            PrintLine("Send data failed.");
+            PrintLine("WARNING. Send data failed.");
           }
           tick_lora = GetTick();
           state_lora = S_WAIT_INTERVAL;
@@ -286,15 +395,15 @@ static void AppOpTask(void *param) {
         break;
     }
     // Check connection
-    if ((state_lora != S_IDLE) && (!LoRaComponIsJoined())) {
-      PrintLine("Connection lost.");
+    if ((state_lora != S_IDLE) && (state_lora != S_WAIT_JOIN) && (!LoRaComponIsJoined())) {
+      PrintLine("WARNING. Connection lost.");
       state_lora = S_IDLE;
     }
   }
   LoRaComponStop();
 
   //
-  PrintLine("AppOpTask ended.");
+  PrintLine("INFO. AppOpTask ended.");
   gAppOpHandle = NULL;
   vTaskDelete(NULL);
 }
@@ -309,12 +418,13 @@ int8_t AppOpInit(void) {
   LoRaComponHwInit();
 
   //
+  AppDataInit();
   LedInit();
   SensorInit();
 
   // Create task
   if (xTaskCreate(AppOpTask, "AppOp", 4096, NULL, TASK_PRIO_GENERAL, &gAppOpHandle) != pdPASS) {
-    printf("ERROR. Failed to create AppOp task.\n");
+    PrintLine("ERROR. Failed to create AppOp task.");
     return -1;
   } else {
     return 0;

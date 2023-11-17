@@ -2,9 +2,9 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="50mm"
+   width="55mm"
    height="35mm"
-   viewBox="0 0 50 35"
+   viewBox="0 0 55 35"
    version="1.1"
    id="svg1"
    inkscape:version="1.3 (1:1.3+202307231459+0e150ed6c4)"
@@ -27,15 +27,16 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      showgrid="true"
-     inkscape:zoom="3.0716611"
-     inkscape:cx="75.366388"
-     inkscape:cy="88.551437"
+     inkscape:zoom="8.6879696"
+     inkscape:cx="154.58157"
+     inkscape:cy="51.220253"
      inkscape:window-width="1839"
      inkscape:window-height="1056"
      inkscape:window-x="41"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
-     inkscape:current-layer="layer1">
+     inkscape:current-layer="layer1"
+     inkscape:export-bgcolor="#ffffffff">
     <inkscape:grid
        id="grid1"
        units="mm"
@@ -54,134 +55,212 @@
        visible="true" />
   </sodipodi:namedview>
   <defs
-     id="defs1" />
+     id="defs1">
+    <marker
+       style="overflow:visible"
+       id="ConcaveTriangle"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Concave triangle arrow"
+       markerWidth="1"
+       markerHeight="1"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.7)"
+         d="M -2,-4 9,0 -2,4 c 2,-2.33 2,-5.66 0,-8 z"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         id="path7" />
+    </marker>
+  </defs>
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
     <rect
-       style="fill:#85ceff;stroke:#000000;stroke-width:0.264999;stroke-linecap:round;stroke-opacity:1;paint-order:stroke markers fill;fill-opacity:1"
+       style="fill:#85ceff;fill-opacity:1;stroke:#000000;stroke-width:0.264999;stroke-linecap:round;stroke-opacity:1;paint-order:stroke markers fill"
        id="rect1"
        width="26"
        height="10"
-       x="10"
-       y="5" />
+       x="6.9999995"
+       y="8" />
+    <g
+       id="g1"
+       transform="translate(-1.9999999,2.9999999)">
+      <rect
+         style="fill:#93a3fd;fill-opacity:1;stroke:#000000;stroke-width:0.264999;stroke-linecap:round;stroke-opacity:1;paint-order:stroke markers fill"
+         id="rect1-5"
+         width="20"
+         height="10"
+         x="35"
+         y="5" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         x="44.997932"
+         y="10.778591"
+         id="text1-2"><tspan
+           sodipodi:role="line"
+           id="tspan1-9"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;stroke-width:0.264583"
+           x="44.997932"
+           y="10.778591">CommandOp</tspan></text>
+    </g>
     <rect
-       style="fill:#90fed1;stroke:#000000;stroke-width:0.265;stroke-linecap:round;stroke-opacity:1;paint-order:stroke markers fill;fill-opacity:1"
+       style="fill:#90fed1;fill-opacity:1;stroke:#000000;stroke-width:0.265;stroke-linecap:round;stroke-opacity:1;paint-order:stroke markers fill"
        id="rect1-3"
        width="12.999999"
        height="9.9999981"
-       x="24"
-       y="19" />
+       x="21"
+       y="22" />
     <rect
-       style="fill:#e4f1ae;stroke:#000000;stroke-width:0.265;stroke-linecap:round;stroke-opacity:1;paint-order:stroke markers fill;fill-opacity:1"
+       style="fill:#e4f1ae;fill-opacity:1;stroke:#000000;stroke-width:0.265;stroke-linecap:round;stroke-opacity:1;paint-order:stroke markers fill"
        id="rect1-3-1"
        width="13"
        height="10"
-       x="9"
-       y="19" />
+       x="5.9999995"
+       y="22" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-       x="23.566145"
-       y="10.753786"
+       x="20.566145"
+       y="13.753786"
        id="text1"><tspan
          sodipodi:role="line"
          id="tspan1"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;stroke-width:0.264583"
-         x="23.566145"
-         y="10.753786">AppOp</tspan></text>
+         x="20.566145"
+         y="13.753786">AppOp</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.11667px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-       x="15.465895"
-       y="21.640968"
+       x="12.465895"
+       y="24.640968"
        id="text1-7"><tspan
          sodipodi:role="line"
          id="tspan1-6"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.11667px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;stroke-width:0.264583"
-         x="15.465895"
-         y="21.640968">LoRa</tspan><tspan
+         x="12.465895"
+         y="24.640968">LoRa</tspan><tspan
          sodipodi:role="line"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.11667px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;stroke-width:0.264583"
-         x="15.465895"
-         y="24.286806"
+         x="12.465895"
+         y="27.286806"
          id="tspan2">Component</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.11667px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-       x="30.406982"
-       y="21.852324"
+       x="27.406982"
+       y="24.852324"
        id="text1-6"><tspan
          sodipodi:role="line"
          id="tspan1-3"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.11667px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;stroke-width:0.264583"
-         x="30.406982"
-         y="21.852324">Sensor</tspan></text>
+         x="27.406982"
+         y="24.852324">Sensor</tspan></text>
     <rect
-       style="fill:#9ff9ff;stroke:#000000;stroke-width:0.265;stroke-linecap:round;stroke-opacity:1;paint-order:stroke markers fill;fill-opacity:1"
+       style="fill:#9ff9ff;fill-opacity:1;stroke:#000000;stroke-width:0.265;stroke-linecap:round;stroke-opacity:1;paint-order:stroke markers fill"
        id="rect1-3-7"
        width="7.000001"
        height="2.9999993"
-       x="34"
-       y="23" />
+       x="31"
+       y="26" />
     <rect
-       style="fill:#9ff9ff;stroke:#000000;stroke-width:0.265;stroke-linecap:round;stroke-opacity:1;paint-order:stroke markers fill;fill-opacity:1"
+       style="fill:#9ff9ff;fill-opacity:1;stroke:#000000;stroke-width:0.265;stroke-linecap:round;stroke-opacity:1;paint-order:stroke markers fill"
        id="rect1-3-7-8"
        width="7.000001"
        height="2.9999993"
-       x="35"
-       y="24" />
+       x="32"
+       y="27" />
     <rect
-       style="fill:#9ff9ff;stroke:#000000;stroke-width:0.265;stroke-linecap:round;stroke-opacity:1;paint-order:stroke markers fill;fill-opacity:1"
+       style="fill:#9ff9ff;fill-opacity:1;stroke:#000000;stroke-width:0.265;stroke-linecap:round;stroke-opacity:1;paint-order:stroke markers fill"
        id="rect1-3-7-4"
        width="7.000001"
        height="2.9999993"
-       x="36"
-       y="25" />
+       x="33"
+       y="28" />
     <rect
-       style="fill:#f1e7ae;stroke:#000000;stroke-width:0.265;stroke-linecap:round;stroke-opacity:1;paint-order:stroke markers fill;fill-opacity:1"
+       style="fill:#f1e7ae;fill-opacity:1;stroke:#000000;stroke-width:0.265;stroke-linecap:round;stroke-opacity:1;paint-order:stroke markers fill"
        id="rect1-3-7-4-9"
        width="9"
        height="4.000001"
-       x="4.5594406"
-       y="25" />
+       x="1.5594404"
+       y="28" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-       x="42.14782"
-       y="29.622513"
+       x="39.14782"
+       y="32.622513"
        id="text1-6-4"><tspan
          sodipodi:role="line"
          id="tspan1-3-4"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;stroke-width:0.264583"
-         x="42.14782"
-         y="29.622513">I2C sensors</tspan></text>
+         x="39.14782"
+         y="32.622513">I2C sensors</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:0.705556px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="32.376083"
+       y="19.803165"
+       id="text1-6-4-3"><tspan
+         sodipodi:role="line"
+         id="tspan1-3-4-5"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:0.705556px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;stroke-width:0.264583"
+         x="32.376083"
+         y="19.803165">Get info &amp;</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:0.705556px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;stroke-width:0.264583"
+         x="32.376083"
+         y="20.68511"
+         id="tspan5">Reset to default</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-       x="9.0515165"
-       y="26.63172"
+       x="42.994831"
+       y="2.1349144"
+       id="text1-6-4-6"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;stroke-width:0.264583"
+         x="42.994831"
+         y="2.1349144"
+         id="tspan4">Console Commands</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111px;line-height:1.25;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="6.0515161"
+       y="29.63172"
        id="text1-6-4-9"><tspan
          sodipodi:role="line"
          id="tspan1-3-4-2"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;stroke-width:0.264583"
-         x="9.0515165"
-         y="26.63172">LoRaMAC</tspan><tspan
+         x="6.0515161"
+         y="29.63172">LoRaMAC</tspan><tspan
          sodipodi:role="line"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.41111px;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle;stroke-width:0.264583"
-         x="9.0515165"
-         y="28.395607"
+         x="6.0515161"
+         y="31.395607"
          id="tspan3">and Radios</tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 16,14.999999 v 4"
+       d="m 13,17.999999 v 4"
        id="path3"
        sodipodi:nodetypes="cc" />
     <path
        style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 30.000001,15 v 4"
+       d="m 27.000001,18 v 4"
        id="path3-5"
        sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-start:url(#ConcaveTriangle);marker-end:url(#ConcaveTriangle)"
+       d="m 42.999998,5.9999999 v -2"
+       id="path1"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.1;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 34.999998,18 v 2 H 16.999999 v 2"
+       id="path4" />
   </g>
 </svg>

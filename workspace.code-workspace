@@ -9,7 +9,9 @@
 	],
 	"settings": {
 		"files.associations": {
-			"stdbool.h": "c"
+			"stdbool.h": "c",
+			"task_priority.h": "c",
+			"mutex_helper.h": "c"
 		}
 	}
 }
