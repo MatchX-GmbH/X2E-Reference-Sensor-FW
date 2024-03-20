@@ -6,7 +6,11 @@
             "cppStandard": "c++17",
             "includePath": [
                 "${workspaceFolder}/main/**",
-                "${workspaceFolder}/components/**",
+                "${workspaceFolder}/components/i2c_devices/zmod4410",
+                "${workspaceFolder}/components/i2c_devices/bme280",
+                "${workspaceFolder}/components/i2c_devices/lis2de12",
+                "${workspaceFolder}/components/i2c_devices",
+                "${workspaceFolder}/components/lora_compon/**",
                 "${workspaceFolder}/../common/**",
                 "~/esp/esp-idf/components/**"
             ],

@@ -190,12 +190,20 @@ void LedSet(int8_t aMode, int16_t aCycleCount) {
       off_time = 0;
       break;
     case LED_MODE_FAST_BLINKING:
-      on_time = 100;
-      off_time = 100;
+      on_time = 50;
+      off_time = 50;
+      break;
+    case LED_MODE_BLINKING:
+      on_time = 200;
+      off_time = 200;
       break;
     case LED_MODE_SLOW_BLINKING:
-      on_time = 300;
-      off_time = 1200;
+      on_time = 500;
+      off_time = 500;
+      break;
+    case LED_MODE_SHORT_PULSE:
+      on_time = 50;
+      off_time = 950;
       break;
     default:
       // included LED_MODE_ALWAYS_OFF

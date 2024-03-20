@@ -1,0 +1,12 @@
+{
+  "editor.tabSize": 2,
+  "files.exclude": {
+    "**/.git": true,         // this is a default value
+    "**/.DS_Store": true,    // this is a default value
+    "build": true
+  },
+  "files.associations": {
+    "portmacro.h": "c",
+    "stdint.h": "c"
+  }
+}

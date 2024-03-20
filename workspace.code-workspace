@@ -5,13 +5,45 @@
 		},
 		{
 			"path": "example_device"
+		},
+		{
+			"path": "GPS_Tracker"
+		},
+		{
+			"path": "testing/test_gps"
+		},
+		{
+			"path": "testing/test_lora"
+		},
+		{
+			"path": "testing/test_spi"
+		},
+		{
+			"path": "testing/test_hello"
+		},
+		{
+			"path": "testing/test_ble_dfu"
+		},
+		{
+			"path": "testing/test_i2c_devices"
 		}
 	],
 	"settings": {
 		"files.associations": {
 			"stdbool.h": "c",
 			"task_priority.h": "c",
-			"mutex_helper.h": "c"
+			"mutex_helper.h": "c",
+			"hal_esp32_i2c.h": "c",
+			"*.inc": "c",
+			"mx_target.h": "c",
+			"iaq_2nd_gen.h": "c",
+			"zmod4410_config_iaq2.h": "c",
+			"zmod4xxx.h": "c",
+			"zmod4xxx_cleaning.h": "c",
+			"zmod4xxx_hal.h": "c",
+			"iaq_2nd_gen_ulp.h": "c",
+			"air_quality.h": "c",
+			"freertos.h": "c"
 		}
 	}
 }

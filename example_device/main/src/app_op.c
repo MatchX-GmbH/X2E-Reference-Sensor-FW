@@ -21,6 +21,8 @@
 
 #include "app_data.h"
 #include "app_utils.h"
+#include "ble_dfu.h"
+#include "button.h"
 #include "debug.h"
 #include "led.h"
 #include "lora_compon.h"
@@ -40,9 +42,14 @@
 #define DelayMs(x) vTaskDelay(x / portTICK_PERIOD_MS)
 
 // config
-#if defined(CONFIG_MATCHX_ENABLE_DEEP_SLEEP)
+#if defined(CONFIG_MATCHX_DISABlE_SLEEP)
+#define MATCHX_DISABlE_SLEEP true
+#define MATCHX_ENABLE_DEEP_SLEEP false
+#elif defined(CONFIG_MATCHX_ENABLE_DEEP_SLEEP)
+#define MATCHX_DISABlE_SLEEP false
 #define MATCHX_ENABLE_DEEP_SLEEP true
 #else
+#define MATCHX_DISABlE_SLEEP false
 #define MATCHX_ENABLE_DEEP_SLEEP false
 #endif
 
@@ -57,18 +64,20 @@ typedef enum {
 } LoRaState_t;
 
 // Battery Current threshold for external power detection
-#define VALUE_EXT_POWER_CURRENT_THRESHOLD -0.01
+#define VALUE_EXT_POWER_CURRENT_THRESHOLD -0.005
 
 // ms
 #define TIME_GO_TO_SLEEP_THRESHOLD 2000
 #define TIME_DEEP_SLEEP_THRESHOLD 30000
 #define INTERVAL_SENDING_DATA 120000
+#define TIME_WAIT_DFU 60000
 
 //==========================================================================
 // Constants
 //==========================================================================
-// PID hash
+// PID
 static const char *kPidHashSuffix = ".MatchX";
+static char gPid[32];
 
 //==========================================================================
 // Variables
@@ -84,6 +93,7 @@ static bool IsExtPower(void) {
   float batt_percentage;
 
   SensorGetBattery(&batt_percentage, &batt_current, &batt_voltage);
+  // DEBUG_PRINTLINE("Battery %.3fA %.2fV", batt_current, batt_voltage);
 
   //
   if (batt_current >= VALUE_EXT_POWER_CURRENT_THRESHOLD) {
@@ -142,7 +152,8 @@ static void SendBlankFrame(void) {
   } else {
     LoRaComponSetBatteryPercent(batt_percentage);
   }
-  LoRaComponSendData(buf, 0);
+  buf[0] = 0;
+  LoRaComponSendData(buf, 1);
 }
 
 //==========================================================================
@@ -172,9 +183,9 @@ static void EnterSleep(uint32_t aTimeToSleep, bool aDeepSleep) {
 
   // Enter sleep
   if (aDeepSleep) {
-    EnterDeepSleep(aTimeToSleep, false);
+    EnterDeepSleep(aTimeToSleep, true);
   } else {
-    EnterLightSleep(aTimeToSleep, false);
+    EnterLightSleep(aTimeToSleep, true);
   }
 
   // Wake up and call all to resume
@@ -218,7 +229,6 @@ static int getJsonString(const char *aJson, const jsmntok_t *aToken, int aTokenC
 // Kick start LoRa
 //==========================================================================
 static void KickStartLoRa(bool aWakeFromSleep) {
-  char pid[32];
   uint8_t pid_hash[SHA256_BLOCK_SIZE];
   AppSettings_t *settings = AppSettingsGet();
   bool msg_shown = false;
@@ -226,7 +236,7 @@ static void KickStartLoRa(bool aWakeFromSleep) {
   // Wait until PID is ready
   for (;;) {
     // Try read PID from AppSettings
-    memset(pid, 0, sizeof(pid));
+    memset(gPid, 0, sizeof(gPid));
     memset(pid_hash, 0, sizeof(pid_hash));
     if (AppDataTakeMutex()) {
       if (strlen(settings->qrCode) > 0) {
@@ -242,18 +252,18 @@ static void KickStartLoRa(bool aWakeFromSleep) {
         } else if ((j_ret < 1) || (j_tokens[0].type != JSMN_OBJECT)) {
           PrintLine("ERROR. QRCODE JSON resp invalid format.");
         } else {
-          if (getJsonString(settings->qrCode, j_tokens, j_ret, "PID", pid, sizeof(pid)) == 0) {
+          if (getJsonString(settings->qrCode, j_tokens, j_ret, "PID", gPid, sizeof(gPid)) == 0) {
             SHA256_CTX ctx;
 
             sha256_init(&ctx);
-            sha256_update(&ctx, (const uint8_t *)pid, strlen(pid));
+            sha256_update(&ctx, (const uint8_t *)gPid, strlen(gPid));
             sha256_update(&ctx, (const uint8_t *)kPidHashSuffix, strlen(kPidHashSuffix));
             sha256_final(&ctx, pid_hash);
 
-            DEBUG_PRINTLINE("PID: %s", pid);
+            DEBUG_PRINTLINE("PID: %s", gPid);
             DEBUG_HEX2STRING("HASH: ", pid_hash, sizeof(pid_hash));
           } else {
-            memset(pid, 0, sizeof(pid));
+            memset(gPid, 0, sizeof(gPid));
             memset(pid_hash, 0, sizeof(pid_hash));
           }
         }
@@ -262,8 +272,8 @@ static void KickStartLoRa(bool aWakeFromSleep) {
     }
 
     // Got PID, kick start LoRa and return
-    if (strlen(pid) > 0) {
-      LoRaComponStart(pid, pid_hash, aWakeFromSleep);
+    if (strlen(gPid) > 0) {
+      LoRaComponStart(gPid, pid_hash, aWakeFromSleep);
       PrintLine("INFO. LoRa component started.");
       break;
     }
@@ -273,7 +283,7 @@ static void KickStartLoRa(bool aWakeFromSleep) {
       PrintLine("WARNING. PID not found. Waiting...");
       msg_shown = true;
     }
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    vTaskDelay(500 / portTICK_PERIOD_MS);
   }
 }
 
@@ -292,13 +302,68 @@ static void AppOpTask(void *param) {
     DEBUG_PRINTLINE("Wake up from sleep");
     wake_from_sleep = true;
   }
+
+  //
   KickStartLoRa(wake_from_sleep);
+  if (!LoRaComponIsProvisioned()) {
+    PrintLine("INFO. Waiting for provision.");
+  }
 
   // start main loop of AppOp.
   uint32_t tick_lora;
+  uint32_t tick_dfu = 0;
   LoRaState_t state_lora = S_IDLE;
   for (;;) {
     vTaskDelay(500 / portTICK_PERIOD_MS);
+
+    // Button and BLE DFU
+    if (ButtonIsPressed()) {
+      if (ButtonIsHeld(5000)) {
+        tick_dfu = GetTick();
+        if (!BleDfuServerIsStarted()) {
+          char dfu_name[20];
+          char *ptr = gPid;
+          if (strlen (gPid) > 5) {
+            ptr += (strlen(gPid) - 5);
+          }
+          snprintf(dfu_name, sizeof (dfu_name), "X2E_DFU_%s", ptr);
+          if (BleDfuServerStart(dfu_name) >= 0) {
+            PrintLine("INFO. BLE DFU started.");
+          }
+        }
+        // Wait button release
+        LedSet(LED_MODE_FAST_BLINKING, -1);
+        for (;;) {
+          if (!ButtonIsPressed()) break;
+          vTaskDelay(500 / portTICK_PERIOD_MS);
+        }
+        ButtonClear();
+      }
+    }
+    if (BleDfuServerIsConnected()) {
+      LedSet(LED_MODE_FAST_BLINKING, -1);
+      PrintLine("INFO. BLE connected.");
+      LoRaComponStop();
+      // Wait disconnect
+      for (;;) {
+        if (!BleDfuServerIsConnected()) break;
+        vTaskDelay(500 / portTICK_PERIOD_MS);
+      }
+      // Restart
+      PrintLine("INFO. BLE disconnected.");
+      vTaskDelay(500 / portTICK_PERIOD_MS);
+      esp_restart();
+    } else if ((BleDfuServerIsStarted()) && (TickElapsed(tick_dfu) > TIME_WAIT_DFU)) {
+      BleDfuServerStop();
+      PrintLine("INFO. BLE DFU stopped.");
+      vTaskDelay(500 / portTICK_PERIOD_MS);
+    }
+
+    //
+    bool allow_sleep = false;
+    if ((MATCHX_DISABlE_SLEEP == false) && (IsExtPower() == false) && (!BleDfuServerIsStarted())) {
+      allow_sleep = true;
+    }
 
     //
     switch (state_lora) {
@@ -306,6 +371,8 @@ static void AppOpTask(void *param) {
         if (LoRaComponIsProvisioned()) {
           PrintLine("INFO. Device is provisioned.");
           state_lora = S_WAIT_JOIN;
+        } else {
+          LedSet(LED_MODE_SHORT_PULSE, -1);
         }
         break;
       case S_WAIT_JOIN:
@@ -321,7 +388,7 @@ static void AppOpTask(void *param) {
           state_lora = S_SAMPLE_DATA;
         } else {
           LedSet(LED_MODE_SLOW_BLINKING, -1);
-          if (IsExtPower() == false) {
+          if (allow_sleep) {
             uint32_t time_to_sleep = LoRaComponGetWaitingTime();
             if (time_to_sleep > TIME_GO_TO_SLEEP_THRESHOLD) {
               DEBUG_PRINTLINE("S_IDLE time_to_sleep=%u", time_to_sleep);
@@ -341,7 +408,7 @@ static void AppOpTask(void *param) {
         break;
       case S_SEND_DATA:
         // Send data
-        LedSet(LED_MODE_FAST_BLINKING, -1);
+        LedSet(LED_MODE_BLINKING, -1);
         SendData();
         tick_lora = GetTick();
         state_lora = S_SEND_DATA_WAIT;
@@ -355,7 +422,7 @@ static void AppOpTask(void *param) {
           }
           tick_lora = GetTick();
           state_lora = S_WAIT_INTERVAL;
-        } else if (IsExtPower() == false) {
+        } else if (allow_sleep) {
           uint32_t time_to_sleep = LoRaComponGetWaitingTime();
 
           if (time_to_sleep > TIME_GO_TO_SLEEP_THRESHOLD) {
@@ -373,7 +440,7 @@ static void AppOpTask(void *param) {
         if (elapsed >= interval) {
           tick_lora = GetTick();
           state_lora = S_SAMPLE_DATA;
-        } else if (IsExtPower() == false) {
+        } else if (allow_sleep) {
           uint32_t lora_waiting_time = LoRaComponGetWaitingTime();
 
           uint32_t time_to_sleep = interval - elapsed;
@@ -421,6 +488,7 @@ int8_t AppOpInit(void) {
   AppDataInit();
   LedInit();
   SensorInit();
+  ButtonInit();
 
   // Create task
   if (xTaskCreate(AppOpTask, "AppOp", 4096, NULL, TASK_PRIO_GENERAL, &gAppOpHandle) != pdPASS) {

@@ -1,5 +1,5 @@
-set(src_dirs "src" "src/i2c_sensors" "../../common")
-set(inc_dirs "src" "src/i2c_sensors" "../../common" "../components/lora_compon" "../components/lora_compon/main")
+set(src_dirs "src" "${PROJECT_DIR}/../common")
+set(inc_dirs "src" "${PROJECT_DIR}/../common" "${PROJECT_DIR}/components/lora_compon" "${PROJECT_DIR}/components/lora_compon/main" "${PROJECT_DIR}/components/i2c_devices")
 
 # Add selected target
 if(CONFIG_MATCHX_TARGET_NEXUS)

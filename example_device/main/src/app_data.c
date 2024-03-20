@@ -62,7 +62,7 @@ static void SetDefaultAppSettings(void) {
   DEBUG_PRINTLINE("Set app settings to default.");
   memset(&gAppSettings, 0, sizeof(AppSettings_t));
   gAppSettings.magicCode = MAGIC_APP_SETTINGS;
-  strncpy(gAppSettings.qrCode, "{\"PID\":\"X\"}", sizeof(gAppSettings.qrCode));
+  strncpy(gAppSettings.qrCode, "{\"PID\":\"\"}", sizeof(gAppSettings.qrCode));
 }
 
 //==========================================================================

@@ -15,7 +15,9 @@ enum {
   LED_MODE_OFF,
   LED_MODE_ON,
   LED_MODE_FAST_BLINKING,
+  LED_MODE_BLINKING,
   LED_MODE_SLOW_BLINKING,
+  LED_MODE_SHORT_PULSE,
 };
 
 //==========================================================================

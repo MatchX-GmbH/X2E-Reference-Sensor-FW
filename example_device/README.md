@@ -6,23 +6,15 @@ This is an example LoRa device. It using the LoRa Component to connect to the Lo
 
 ## Development
 
-1. Set target at first time.
-
-   ```
-   idf.py set-target esp32s3
-   ```
-
-    
-
-2. Build the project.
+1. Build the project.
 
    ```
    idf.py build
    ```
-   
+
       
 
-4. Download to the target.
+2. Download to the target.
 
    ```
    idf.py flash -p /dev/ttyACM0
@@ -67,7 +59,7 @@ To achieve a lower power consumption during sleep, please remove the two pull-up
 
 ## Console commands
 
-The default console is vis the USB connection. The command format is line based and AT like. A success command will return a `OK` string. If there is response, it will return before the `OK`.
+The default console is via the USB connection. The command format is line based and AT like. A success command will return a `OK` string. If there is response, it will return before the `OK`.
 
 #### Command List
 
@@ -95,4 +87,27 @@ AT+CQRCODE?
 +CQRCODE:{"PID":"PIDOOOOOOOOOOOOOOOOOOOOO","B":"MatchX","M":"X2E","V":"1.1"}
 OK
 ```
+
+
+
+## Button
+
+Press and hold the user button for 5s will bring up the BLE DFU server. Then you could use the Nordic DFU mobile App.
+
+https://play.google.com/store/apps/details?id=no.nordicsemi.android.dfu&hl=en&gl=US
+
+https://apps.apple.com/tt/app/nrf-device-firmware-update/id1624454660  (require iOS 16)
+
+
+
+## LED
+
+| Mode                   | Description                      |
+| ---------------------- | -------------------------------- |
+| LED_MODE_ON            | Steady on.                       |
+| LED_MODE_FAST_BLINKING | Blinking at 50ms on, 50ms off.   |
+| LED_MODE_BLINKING      | Blinking at 200ms on, 200ms off. |
+| LED_MODE_SLOW_BLINKING | Blinking at 500ms on, 500ms off. |
+| LED_MODE_SHORT_PULSE   | Blinking at 50ms on, 950ms off.  |
+| LED_MODE_OFF           | Steady off.                      |
 

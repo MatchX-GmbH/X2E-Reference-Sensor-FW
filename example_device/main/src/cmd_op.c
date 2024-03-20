@@ -170,6 +170,7 @@ static void CommandOpTask(void *param) {
 
   // Start loop
   for (;;) {
+    vTaskDelay(1);
     int key_in = getc(stdin);
     if (key_in == 0x0d) key_in = 0x0a;
 

@@ -39,11 +39,11 @@ static void SetWakeupEvent(uint32_t aTimeToSleep, bool aWakeByButton) {
   }
 
   if (aWakeByButton) {
-    const int ext_wakeup_pin_1 = 7;
+    const int ext_wakeup_pin_1 = 0;
     const uint64_t ext_wakeup_pin_1_mask = (1ULL << ext_wakeup_pin_1);
 
     DEBUG_PRINTLINE("Enabling EXT1 wakeup on pins GPIO%d", ext_wakeup_pin_1);
-    esp_sleep_enable_ext1_wakeup(ext_wakeup_pin_1_mask, ESP_EXT1_WAKEUP_ANY_HIGH);
+    esp_sleep_enable_ext1_wakeup(ext_wakeup_pin_1_mask, ESP_EXT1_WAKEUP_ALL_LOW);
   }
 
   // // Isolate GPIO26 pin from external circuits.
