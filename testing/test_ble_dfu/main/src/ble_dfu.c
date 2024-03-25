@@ -124,6 +124,8 @@ static uint8_t gBleDataLen;
 static uint32_t gFirmwareSize;
 static uint32_t gFirmwareCrc;
 static uint32_t gFwRxingSize;
+static uint16_t gFwRxingPkgCount;
+static uint16_t gReceiptNotifyCount;
 static bool gFwRxing;
 static uint32_t gFwRxingCrc;
 static bool gFwOtaError;
@@ -474,6 +476,17 @@ static void gatts_profile_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_
             }
             gFwRxingSize += param->write.len;
             gFwRxingCrc = Crc32Cal(gFwRxingCrc, param->write.value, param->write.len);
+
+            if (gReceiptNotifyCount > 0) {
+              gFwRxingPkgCount++;
+              if (gFwRxingPkgCount >= gReceiptNotifyCount) {
+                gFwRxingPkgCount = 0;
+                gBleTxingBuf[0] = OPCODE_PACKAGE_NOTIFY;
+                PackU32Le(&gBleTxingBuf[1], gFwRxingSize);
+                esp_ble_gatts_send_indicate(gCurrentGattIf, gCurrentConnId, gGattHandleTable[IDX_CHAR_VAL_CONTROL], 5, gBleTxingBuf,
+                                            false);
+              }
+            }
           } else {
             memcpy(gBleDataBuf, param->write.value, param->write.len);
             gBleDataLen = param->write.len;
@@ -638,7 +651,11 @@ static void BleDfuServerTask(void *pvParameters) {
     } else {
       vTaskDelay(50 / portTICK_PERIOD_MS);
 
-      if (state != S_WAIT_IMAGE) {
+      
+      if (state == S_WAIT_IMAGE) {
+        tick_timeout = GetTick();
+      }
+      else {
         if (TickElapsed(tick_timeout) >= TIMEOUT_NO_DFU_COMM) {
           PrintLine("ERROR. BleDfuServer communication timeout.");
           esp_ble_gatts_close(gCurrentGattIf, gCurrentConnId);
@@ -732,6 +749,8 @@ static void BleDfuServerTask(void *pvParameters) {
           if ((gBleControlBuf[0] == OPCODE_INIT_PARAM) && (gBleControlBuf[1] == 0x01)) {
             PrepareResp(OPCODE_INIT_PARAM, RESP_SUCCESS);
             gFwRxingSize = 0;
+            gFwRxingPkgCount = 0;
+            gReceiptNotifyCount = 0;
             gFwRxingCrc = 0xffffffff;
             gFwOtaError = false;
             gFwRxing = true;
@@ -748,6 +767,16 @@ static void BleDfuServerTask(void *pvParameters) {
         if (gBleControlLen == 1) {
           if (gBleControlBuf[0] == OPCODE_RECV_FIRMWARE) {
             state = S_WAIT_IMAGE;
+          } else {
+            PrepareResp(OPCODE_RECV_FIRMWARE, RESP_INVALID_STATE);
+            state = S_ERROR;
+          }
+          gBleControlLen = 0;
+        } else if (gBleControlLen == 3) {
+          if (gBleControlBuf[0] == OPCODE_REQ_PACKAGE_NOTIFY) {
+            gReceiptNotifyCount = UnpackU16Le(&gBleControlBuf[1]);
+            DEBUG_PRINTLINE("gReceiptNotifyCount=%d", gReceiptNotifyCount);
+            PrepareResp(OPCODE_REQ_PACKAGE_NOTIFY, RESP_SUCCESS);
           } else {
             PrepareResp(OPCODE_RECV_FIRMWARE, RESP_INVALID_STATE);
             state = S_ERROR;
@@ -829,8 +858,8 @@ static void BleDfuServerTask(void *pvParameters) {
     // Send resp
     if (gBleTxingLen) {
       if ((gBleConnected) && (gBleControlNotify != 0)) {
-        esp_ble_gatts_send_indicate(gCurrentGattIf, gCurrentConnId, gGattHandleTable[IDX_CHAR_VAL_CONTROL], 3, gBleTxingBuf,
-                                    gBleTxingLen);
+        esp_ble_gatts_send_indicate(gCurrentGattIf, gCurrentConnId, gGattHandleTable[IDX_CHAR_VAL_CONTROL], gBleTxingLen,
+                                    gBleTxingBuf, false);
       }
       gBleTxingLen = 0;
     }

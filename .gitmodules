@@ -6,3 +6,6 @@
 	path = GPS_Tracker/components/lora_compon
 	url = https://github.com/MatchX-GmbH/X2E-Reference-Sensor-LoRa-lib.git
 	branch = main
+[submodule "environmental_sensor/components/lora_compon"]
+	path = environmental_sensor/components/lora_compon
+	url = https://github.com/MatchX-GmbH/X2E-Reference-Sensor-LoRa-lib.git

@@ -26,6 +26,9 @@
 		},
 		{
 			"path": "testing/test_i2c_devices"
+		},
+		{
+			"path": "environmental_sensor"
 		}
 	],
 	"settings": {
@@ -43,7 +46,9 @@
 			"zmod4xxx_hal.h": "c",
 			"iaq_2nd_gen_ulp.h": "c",
 			"air_quality.h": "c",
-			"freertos.h": "c"
+			"freertos.h": "c",
+			"portmacro.h": "c",
+			"task.h": "c"
 		}
 	}
 }

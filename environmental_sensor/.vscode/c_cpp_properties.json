@@ -6,8 +6,12 @@
             "cppStandard": "c++17",
             "includePath": [
                 "${workspaceFolder}/main/**",
-                "${workspaceFolder}/components/**",
-                "${workspaceFolder}/../../common/**",
+                "${workspaceFolder}/components/i2c_devices/zmod4410",
+                "${workspaceFolder}/components/i2c_devices/bme280",
+                "${workspaceFolder}/components/i2c_devices/lis2de12",
+                "${workspaceFolder}/components/i2c_devices",
+                "${workspaceFolder}/components/lora_compon/**",
+                "${workspaceFolder}/../common/**",
                 "~/esp/esp-idf/components/**"
             ],
             "forcedInclude": [
@@ -15,6 +19,9 @@
                 "~/esp/esp-idf/components/freertos/include/esp_additions/freertos/FreeRTOSConfig.h"
             ],
             "defines": [
+                "REGION_EU868",
+                "REGION_ISM2400",
+                "SOFT_SE=1",
                 "GPIO_NUM_40=40",
                 "GPIO_NUM_41=41",
                 "GPIO_NUM_42=42",
