@@ -20,8 +20,7 @@
 
 #include "app_utils.h"
 #include "debug.h"
-#include "i2c_sensors/battery.h"
-#include "i2c_sensors/lis2de12.h"
+#include "battery.h"
 #include "mutex_helper.h"
 #include "task_priority.h"
 
@@ -34,62 +33,64 @@
 #define MATCHX_BATTERY_DESING_CAPACITY 1200
 #endif
 
-#define BATTERY_DESING_VOLTAGE 3.7
+#define BATTERY_DESING_VOLTAGE_mV 3700
 
 //==========================================================================
 // Variables
 //==========================================================================
 static TaskHandle_t gSensorTaskHandle = NULL;
-static lis2de12_config_t gAccelConfig;
-static BatteryInfo_t gBatteryInfo;
-static lis2de12_acce_value_t gAccelResult;
+static BatteryResult_t gBatteryResult;
+
+//==========================================================================
+// Set battery design values
+//==========================================================================
+static void SetBatteryDesignValues(void) {
+  uint16_t design_capacity;
+  uint16_t design_voltage_mv;
+
+  // Set design capacity and voltage
+  if (BatteryGetDesignValue(&design_capacity, &design_voltage_mv) < 0) {
+    PrintLine("BatteryGetDesignValue failed. Please try power off/on again.");
+    // Uncondition set
+    BatterySetDesignValue(MATCHX_BATTERY_DESING_CAPACITY, BATTERY_DESING_VOLTAGE_mV);
+    return;
+  }
+  DEBUG_PRINTLINE("Battery design values: %dmAh %dmV", design_capacity, design_voltage_mv);
+
+  if ((design_capacity != MATCHX_BATTERY_DESING_CAPACITY) || (design_voltage_mv != BATTERY_DESING_VOLTAGE_mV)) {
+    if (BatterySetDesignValue(MATCHX_BATTERY_DESING_CAPACITY, BATTERY_DESING_VOLTAGE_mV) < 0) {
+      PrintLine("Change design capacity failed.");
+      return;
+    }
+    PrintLine("INFO. Change battery design values to %dmAh %dmV success.", MATCHX_BATTERY_DESING_CAPACITY, BATTERY_DESING_VOLTAGE_mV);
+  } else {
+    PrintLine("INFO. Battery design values: %dmAh %dmV", design_capacity, design_voltage_mv);
+  }
+}
 
 //==========================================================================
 //==========================================================================
 static void SensorTask(void *param) {
-  // Accelerometer
-  memcpy(&gAccelConfig, &((lis2de12_config_t)LIS2DE12_CONFIG_DEFAULT()), sizeof(lis2de12_config_t));
-
-  gAccelConfig.fs = LIS2DE12_4g;
-  gAccelConfig.odr = LIS2DE12_ODR_10Hz;
-  gAccelConfig.fds = LIS2DE12_DISABLE;
-
-  lis2de12_initialization(I2CNUM, &gAccelConfig);
-  gAccelResult.acce_x = NAN;
-  gAccelResult.acce_y = NAN;
-  gAccelResult.acce_z = NAN;
-
   // Battery
   BatteryInit();
   vTaskDelay(100 / portTICK_PERIOD_MS);
-  BatteryProcess();
-  BatteryGetInfo(&gBatteryInfo);
-  if (gBatteryInfo.designCapacity != MATCHX_BATTERY_DESING_CAPACITY) {
-    if (BatterySetDesignValue(MATCHX_BATTERY_DESING_CAPACITY, BATTERY_DESING_VOLTAGE)) {
-      PrintLine("Change design capacity to %dmAh %.2fV success.", MATCHX_BATTERY_DESING_CAPACITY, BATTERY_DESING_VOLTAGE);
-    } else {
-      PrintLine("Change design capacity failed.");
-    }
-  }
+  SetBatteryDesignValues();
+  // BatteryGetResult(&gBatteryResult);
+  // if (gBatteryResult.designCapacity != MATCHX_BATTERY_DESING_CAPACITY) {
+  //   if (BatterySetDesignValue(MATCHX_BATTERY_DESING_CAPACITY, BATTERY_DESING_VOLTAGE_mV)) {
+  //     PrintLine("INFO. Change design capacity to %dmAh %.2fV success.", MATCHX_BATTERY_DESING_CAPACITY, BATTERY_DESING_VOLTAGE_mV);
+  //   } else {
+  //     PrintLine("WARNING. Change design capacity failed.");
+  //   }
+  // }
 
   // start main loop of task
   for (;;) {
     //
-    BatteryProcess();
     if (TakeMutex()) {
-      BatteryGetInfo(&gBatteryInfo);
+      BatteryGetResult(&gBatteryResult);
       FreeMutex();
       // DEBUG_PRINTLINE("Battery %.2fV %.2fA", gBatteryInfo.voltage, gBatteryInfo.current);
-    }
-
-    // Accelerometer
-    if (lis2de12_Is_data_ready()) {
-      if (TakeMutex()) {
-        lis2de12_get_acce(&gAccelResult);
-        FreeMutex();
-        // DEBUG_PRINTLINE("x=%.2fg, y=%.2fg, z=%.2fg", gAccelResult.acce_x / 1000, gAccelResult.acce_y / 1000,
-        // gAccelResult.acce_z / 1000);
-      }
     }
 
     vTaskDelay(1500 / portTICK_PERIOD_MS);
@@ -104,7 +105,7 @@ int8_t SensorInit(void) {
 
   // Create task
   if (xTaskCreate(SensorTask, "Sensor", 4096, NULL, TASK_PRIO_GENERAL, &gSensorTaskHandle) != pdPASS) {
-    printf("ERROR. Failed to create Sensor task.\n");
+    PrintLine("ERROR. Failed to create Sensor task.");
     return -1;
   } else {
     return 0;
@@ -134,9 +135,9 @@ void SensorGetBattery(float *aPrecentage, float *aCurrent, float *aVoltage) {
   *aCurrent = NAN;
   *aVoltage = NAN;
   if (TakeMutex()) {
-    *aPrecentage = gBatteryInfo.percentage;
-    *aCurrent = gBatteryInfo.current;
-    *aVoltage = gBatteryInfo.voltage;
+    *aPrecentage = gBatteryResult.percentage;
+    *aCurrent = gBatteryResult.current;
+    *aVoltage = gBatteryResult.voltage;
     FreeMutex();
   }
 }

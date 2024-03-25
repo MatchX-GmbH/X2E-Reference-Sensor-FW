@@ -1,0 +1,113 @@
+menu "LoRaWAN"
+    config LORAWAN_ADR_ON
+        bool "Adaptive Data Rate (ADR)"
+        default y
+        help
+            Enable Adaptive Data Rate. 
+            You may use this for stationary device.
+    
+    config LORAWAN_DEFAULT_DATARATE
+        int "Default datarate"
+        default 3
+        range 0 5
+        help
+            Enter the default datarate.
+
+    config LORAWAN_UNCONFIRMED_COUNT
+        int "Number of unconfirmed between confirmed frames"
+        default 0
+        range 0 999
+        help
+            Set the number of unconfirmed frames between confirmed frames.
+            A 0 means always sending confirmed frames.
+
+    config LORAWAN_MAX_NOACK_RETRY
+        int "Max number retry when no ACK"
+        default 3
+        range 1 99
+        help
+            Set the maximum of retry when no ACK received for a confirmed frame.
+            When maximum retry reached, IsSendDone will return true and mark as fail.
+
+    config LORAWAN_NOACK_RETRY_INTERVAL
+        int "Retry interval in seconds"
+        default 20
+        range 10 999
+        help
+            Set the interval for no ACK retry.
+
+    config LORAWAN_LINK_FAIL_COUNT
+        int "Number of failure for Link Down"
+        default 8
+        range 0 999
+        help
+            When number of failure reach this number, it will treat as link down.
+            The LoRa will start over and try to JOIN again.
+
+    config LORAWAN_SW_RADIO_COUNT
+        int "Number of failure to switch radio"
+        default 0
+        range 0 99
+        help
+            When number of failure reach this number, it will switch to other radio.
+            Set to 0 means no radio switching.
+
+    choice LORAWAN_PREFERRED_RADIO
+        prompt "Preferred Radio"
+        default LORAWAN_PREFERRED_ISM2400
+        help
+            Select the preferred radio.
+
+        config LORAWAN_PREFERRED_ISM2400
+            bool "ISM2400 (SX1280)"
+
+        config LORAWAN_PREFERRED_SUBGHZ
+            bool "sub-GHz (SX1261)"
+
+    endchoice # LORAWAN_PREFERRED_RADIO
+
+
+    choice LORAWAN_SUBGHZ_REGION
+        prompt "Region for sub-GHz"
+        default LORAWAN_REGION_EU868
+        help
+            Select the sub-GHz region. It will served by the SX1261 LoRa chip.
+
+        config LORAWAN_REGION_EU868
+            bool "EU868 - For Europe"
+
+        config LORAWAN_REGION_US915
+            bool "US915 - For USA"
+
+        config LORAWAN_REGION_KR920
+            bool "KR920 - For South Korea"
+            
+        config LORAWAN_REGION_AS923
+            bool "AS923 - Used in multiple Asian countries"
+
+        config LORAWAN_REGION_CN470
+            bool "CN470 - For China"
+
+    endchoice # LORAWAN_SUBGHZ_REGION
+
+    config LORAWAN_DEV_PROVISIONING
+        bool "Use MatchX Device Provisioning"
+        default y
+
+    config LORACOMPON_DEBUG
+        bool "Show component debug message"
+        default n
+
+    config LORAMAC_DEBUG
+        bool "Show LoRa MAC debug message"
+        default n
+
+    config LORARADIO_DEBUG
+        bool "Show Radio debug message"
+        default n
+
+    config LORAPLATFORM_DEBUG
+        bool "Show Platform debug message"
+        default n
+
+endmenu

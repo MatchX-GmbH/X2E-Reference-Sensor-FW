@@ -37,6 +37,7 @@
 #define MX_SENSOR_POWERFACTGOR 0x15
 #define MX_SENSOR_ACCEL 0x16
 #define MX_SENSOR_DISTANCE 0x17
+#define MX_SENSOR_IAQ 0x18
 #define MX_SENSOR_UPLINKPOWER 0xfe
 
 //==========================================================================

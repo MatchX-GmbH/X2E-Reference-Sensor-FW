@@ -1,0 +1,35 @@
+{
+    "configurations": [
+        {
+            "name": "ESP-IDF",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "includePath": [
+                "${workspaceFolder}/main/**",
+                "${workspaceFolder}/components/**",
+                "${workspaceFolder}/../common/**",
+                "~/esp/esp-idf/components/**"
+            ],
+            "forcedInclude": [
+                "${workspaceFolder}/build/config/sdkconfig.h",
+                "~/esp/esp-idf/components/freertos/include/esp_additions/freertos/FreeRTOSConfig.h"
+            ],
+            "defines": [
+                "REGION_EU868",
+                "REGION_ISM2400",
+                "SOFT_SE=1",
+                "GPIO_NUM_40=40",
+                "GPIO_NUM_41=41",
+                "GPIO_NUM_42=42",
+                "GPIO_NUM_43=43",
+                "GPIO_NUM_44=44",
+                "GPIO_NUM_45=45",
+                "GPIO_NUM_46=46",
+                "GPIO_NUM_47=47",
+                "GPIO_NUM_48=48"
+            ],
+            "compilerPath": "~/.espressif/tools/xtensa-esp32-elf/esp-2021r2-patch3-8.4.0/xtensa-esp32-elf/bin/xtensa-esp32-elf-g++"
+        }
+    ],
+    "version": 4
+}
