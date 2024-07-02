@@ -1,0 +1,33 @@
+menu "MatchX"
+    choice MATCHX_TARGET_BOARD
+        prompt "Target board"
+        default MATCHX_TARGET_X2E_REF
+        help
+            Select the target board.
+            It will affect the build of components, such as LoRa.
+
+        config MATCHX_TARGET_X2E_REF
+            bool "X2E Reference Sensor"
+
+    endchoice #MATCHX_TARGET_BOARD
+
+    config MATCHX_DISABlE_SLEEP
+        bool "Disable sleep handling"
+        default y
+        help
+            Never enter sleep.
+
+    config MATCHX_DEBUG
+        bool "Show debug message"
+        default n
+        help
+            Showing application debug message.
+
+    config MATCHX_BATTERY_DESING_CAPACITY
+        int "Design Capacity for the battery"
+        default 1200
+        range 0 30000
+        help
+            Set the design capacity for the battery in mAh.
+
+endmenu

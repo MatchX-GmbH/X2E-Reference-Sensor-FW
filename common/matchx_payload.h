@@ -5,7 +5,7 @@
 #define INC_MATCHX_PAYLOAD_H
 //==========================================================================
 //==========================================================================
-// Data type (D7..D4)
+// Uplink Data type (D7..D4)
 #define MX_DATATYPE_PARAM 0x00
 #define MX_DATATYPE_SENSOR 0x10
 #define MX_DATATYPE_BATTLEVEL 0x20
@@ -39,6 +39,14 @@
 #define MX_SENSOR_DISTANCE 0x17
 #define MX_SENSOR_IAQ 0x18
 #define MX_SENSOR_UPLINKPOWER 0xfe
+
+// Donwlink Data Type
+#define MX_DOWNTYPE_SETCTRL 0x04
+
+// Controls
+#define MX_CTRL_DIGITAL 0x13
+#define MX_CTRL_PERCENT 0x14
+#define MX_CTRL_TEXT 0xfe
 
 //==========================================================================
 //==========================================================================

@@ -29,6 +29,9 @@
 		},
 		{
 			"path": "environmental_sensor"
+		},
+		{
+			"path": "class_c_control"
 		}
 	],
 	"settings": {
@@ -48,7 +51,8 @@
 			"air_quality.h": "c",
 			"freertos.h": "c",
 			"portmacro.h": "c",
-			"task.h": "c"
+			"task.h": "c",
+			"*.ipp": "c"
 		}
 	}
 }
