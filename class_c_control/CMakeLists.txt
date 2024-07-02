@@ -5,4 +5,4 @@
 cmake_minimum_required(VERSION 3.5)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-project(demo_controls)
+project(class_c_control)

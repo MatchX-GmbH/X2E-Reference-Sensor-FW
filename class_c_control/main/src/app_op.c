@@ -378,9 +378,9 @@ static void AppOpTask(void *param) {
   uint32_t interval = INTERVAL_SENDING_DATA;
   bool wake_from_sleep;
 
-  PrintLine("INFO. Demo - Controls (%s).", LoRaComponRegionName());
-  if (LoRaComponIsClassC()) {
-    PrintLine ("INFO. Class C Device");
+  PrintLine("INFO. Class-C Control (%s).", LoRaComponRegionName());
+  if (!LoRaComponIsClassC()) {
+    PrintLine ("WARNING. This is not a Class C Device");
   }
 
   //
