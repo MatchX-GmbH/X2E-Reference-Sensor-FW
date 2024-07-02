@@ -1,8 +1,8 @@
 # Example LoRa Device
 
-This is an example LoRa device. It using the LoRa Component to connect to the LoRaWAN. Then sending data every 120s.
+This is a sample LoRa device designed for control purposes. It is classified as a Class-C device, with the control pin designated as IO14. A recommended connection setup is illustrated below.
 
-
+![connections](doc/connections.png)
 
 ## Development
 
@@ -32,28 +32,22 @@ This is an example LoRa device. It using the LoRa Component to connect to the Lo
 ```mermaid
 flowchart TD
 	Start((Start))-->IsJoined{Joined?}
-	IsJoined-- No -->JoinSleep["Light Sleep (Join interval)"]
+	IsJoined-- No -->JoinSleep["Wait for JoinInterval"]
 	JoinSleep-->IsJoined
 	IsJoined-- Yes -->SampleData[Sample data for 5s]
 	SampleData-->SendData[Send data]
 	SendData-->IsSendDone{Done?}
-	IsSendDone-- No -->SendDataSleep["Light Sleep (Retry interval)"]
+	IsSendDone-- No -->SendDataSleep["Wait for RetryInterval"]
 	SendDataSleep-->IsSendDone
-	IsSendDone-- Yes -->CheckRx[Check Rx]
+	IsSendDone-- Yes -->CheckRx[Check and handle Rx]
 	CheckRx-->CheckLink{"Link broken?"}
 	CheckLink-- Yes --> IsJoined
-	CheckLink-- No -->IntervalSleep["Light Sleep (Data interval)"]
+	CheckLink-- No -->IntervalSleep["Wait for DataInterval"]
 	IntervalSleep-->SampleData
 	
 ```
 
 *If enabled `MATCHX_ENABLE_DEEP_SLEEP`, it will enter deep sleep instead of light sleep at join interval and data interval. Deep sleep during retry will stop the retry process.*
-
-
-
-## Hints for low power
-
-To achieve a lower power consumption during sleep, please remove the two pull-up resistors on I2C bus and enable `MATCHX_SLEEP_PULL_I2C_LOW`. Therefore, the I2C pin will pull low during sleep and makes the battery management IC (BQ27220) using less power.
 
 
 

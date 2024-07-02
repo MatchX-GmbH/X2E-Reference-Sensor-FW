@@ -266,11 +266,12 @@ static void EnterSleep(uint32_t aTimeToSleep, bool aDeepSleep) {
   MxTargetPrepareForSleep();
 
   // Enter sleep
-  if (aDeepSleep) {
-    EnterDeepSleep(aTimeToSleep, true);
-  } else {
-    EnterLightSleep(aTimeToSleep, true);
-  }
+  // if (aDeepSleep) {
+  //   EnterDeepSleep(aTimeToSleep, true);
+  // } else {
+  //   EnterLightSleep(aTimeToSleep, true);
+  // }
+  EnterLightSleep(aTimeToSleep, true);
 
   // Wake up and call all to resume
   MxTargetResumeFromSleep();
@@ -379,7 +380,7 @@ static void AppOpTask(void *param) {
 
   PrintLine("INFO. Demo - Controls (%s).", LoRaComponRegionName());
   if (LoRaComponIsClassC()) {
-    PrintLine ("  Class C Device");
+    PrintLine ("INFO. Class C Device");
   }
 
   //

@@ -3,7 +3,7 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 PYTHON_FILE=../scripts/gen_dfu_package.py
-BIN_FILE=build/example_device.bin
+BIN_FILE=build/demo_controls.bin
 
 #
 cd ${SCRIPT_DIR}

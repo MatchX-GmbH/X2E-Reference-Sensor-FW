@@ -13,25 +13,9 @@ menu "MatchX"
 
     config MATCHX_DISABlE_SLEEP
         bool "Disable sleep handling"
-        default n
+        default y
         help
             Never enter sleep.
-
-    config MATCHX_SLEEP_PULL_I2C_LOW
-        bool "Pull low I2C when sleep"
-        default n
-        depends on !MATCHX_DISABlE_SLEEP
-        help
-            By pulling the I2C low, the onboard BQ27220 I2C engine will enter sleep
-            and consuming less.
-            When enable this, please remove all I2C pull-up resisters.
-
-    config MATCHX_ENABLE_DEEP_SLEEP
-        bool "Enable deep sleep"
-        default n
-        depends on !MATCHX_DISABlE_SLEEP
-        help
-            Put the device into deep sleep.
 
     config MATCHX_DEBUG
         bool "Show debug message"
