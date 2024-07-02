@@ -6,11 +6,12 @@
 
 ## Directories
 
-| Name           | Description                                             |
-| -------------- | ------------------------------------------------------- |
-| common         | Source files shared across.                             |
-| example_device | A example LoRa device, sending a fix data periodically. |
-|                |                                                         |
+| Name                 | Description                                                 |
+| -------------------- | ----------------------------------------------------------- |
+| common               | Source files shared across.                                 |
+| example_device       | A example LoRa device, sending a fix data periodically.     |
+| environmental_sensor | A Environmental Sensor sending X2E embedded sensor data.    |
+| class_c_control      | A Class-C LoRa device, accepting command and control a pin. |
 
 
 
