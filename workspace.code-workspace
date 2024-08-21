@@ -1,37 +1,56 @@
 {
 	"folders": [
 		{
+			"name": "common",
 			"path": "common"
 		},
 		{
+			"name": "example_device",
 			"path": "example_device"
 		},
 		{
+			"name": "GPS_Tracker",
 			"path": "GPS_Tracker"
 		},
 		{
+			"name": "test_gps",
 			"path": "testing/test_gps"
 		},
 		{
+			"name": "test_lora",
 			"path": "testing/test_lora"
 		},
 		{
+			"name": "test_spi",
 			"path": "testing/test_spi"
 		},
 		{
+			"name": "test_hello",
 			"path": "testing/test_hello"
 		},
 		{
+			"name": "test_ble_dfu",
 			"path": "testing/test_ble_dfu"
 		},
 		{
+			"name": "test_i2c_devices",
 			"path": "testing/test_i2c_devices"
 		},
 		{
+			"name": "test_ntag",
+			"path": "testing/test_ntag"
+		},
+		{
+			"name": "environmental_sensor",
 			"path": "environmental_sensor"
 		},
 		{
+			"name": "class_c_control",
 			"path": "class_c_control"
+		},
+		{
+			"name": "ntag_validator",
+			"path": "ntag_validator"
 		}
 	],
 	"settings": {
@@ -52,7 +71,8 @@
 			"freertos.h": "c",
 			"portmacro.h": "c",
 			"task.h": "c",
-			"*.ipp": "c"
+			"*.ipp": "c",
+			"math.h": "c"
 		}
 	}
 }

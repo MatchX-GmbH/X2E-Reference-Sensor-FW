@@ -12,3 +12,6 @@
 [submodule "class_c_control/components/lora_compon"]
 	path = class_c_control/components/lora_compon
 	url = https://github.com/MatchX-GmbH/X2E-Reference-Sensor-LoRa-lib.git
+[submodule "ntag_validator/components/lora_compon"]
+	path = ntag_validator/components/lora_compon
+	url = https://github.com/MatchX-GmbH/X2E-Reference-Sensor-LoRa-lib.git
