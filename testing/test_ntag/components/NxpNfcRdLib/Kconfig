@@ -1,0 +1,6 @@
+menu "NFC"
+    config NFCCOMPON_DEBUG
+        bool "Show component debug message"
+        default n
+
+endmenu
